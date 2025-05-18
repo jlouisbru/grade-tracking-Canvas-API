@@ -178,7 +178,7 @@
 
 <h2>🤝 Contributing</h2>
 
-<p>Contributions are welcome! <a href="ko-fi.com/louisfr">Thank you so much for your support!</a></p>
+<p>Contributions are welcome! <a href="https://ko-fi.com/louisfr">Thank you so much for your support!</a></p>
 
 <h2>🐛 Issues and Feedback</h2>
 
