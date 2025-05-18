@@ -99,11 +99,26 @@ Click the button above to create your own copy of the Canvas Tools template
 3. All grades in the sheet will be uploaded to Canvas
 4. A summary will appear when complete
 
-## 🔒 Security Considerations
+## 🔒 Security & FERPA Compliance
 
 - Your Canvas API key provides access to your Canvas account
 - The key is stored securely in the Script Properties and not visible to others
 - When entered in cell B5, it will be read once and then stored securely
+
+### FERPA Compliance
+
+Grade Tracking with Canvas API was designed with educational privacy laws in mind:
+
+- All student data remains within your authorized educational systems (Canvas and Google Workspace)
+- No student personally identifiable information (PII) is stored on third-party servers
+- Data transmission occurs through secure API connections using your authenticated credentials
+- The tool maintains the same level of privacy protection provided by Canvas and Google Workspace
+- Works within existing data processing agreements your institution likely has with both Canvas and Google
+
+Remember that when handling student data, you must follow FERPA requirements:
+- Protect the confidentiality of student education records
+- Only authorized individuals should have access to the spreadsheet
+- Use the data only for legitimate educational purposes
 
 ## 🐞 Troubleshooting
 
