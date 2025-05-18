@@ -41,7 +41,6 @@
   <li>Save the project</li>
   <li>Refresh your spreadsheet</li>
   <li>You should now see a "Canvas Tools" menu</li>
-  <li>Select "Canvas Tools > Setup Spreadsheet" from the menu</li>
 </ol>
 
 <h2>🔧 Setup</h2>
