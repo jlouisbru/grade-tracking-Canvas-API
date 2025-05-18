@@ -178,7 +178,7 @@
 
 <h2>🤝 Contributing</h2>
 
-<p>Contributions are welcome! Please feel free to submit a Pull Request.</p>
+<p>Contributions are welcome! <a href="ko-fi.com/louisfr">Thank you so much for your support!</a></p>
 
 <hr>
 
