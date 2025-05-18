@@ -173,7 +173,8 @@
 
 <h2>👤 Author</h2>
 
-<p>Your Name</p>
+<p>Jean-Louis Bru, Ph.D.</p>
+<p>Instructional Assistant Professor at <a href="https://www.chapman.edu/">Chapman University</a></p>
 
 <h2>🤝 Contributing</h2>
 
