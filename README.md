@@ -1,4 +1,4 @@
-<h1 align="center">Canvas Tools for Google Sheets</h1>
+<h1 align="center">Grade Tracking with Canvas API for Google Sheets</h1>
 
 <p align="center">
   A Google Sheets integration with Canvas LMS that allows educators to fetch student data, download grades, and upload grades directly between Google Sheets and Canvas.
@@ -184,7 +184,7 @@
 
 <h2>📄 Licensing</h2>
 
-<p>Canvas Tools uses dual licensing:</p>
+<p>Grade Tracking with Canvas API for Google Sheets uses dual licensing:</p>
 
 <ul>
   <li><strong>Code</strong>: All source code is licensed under the <a href="LICENSE">MIT License</a></li>
