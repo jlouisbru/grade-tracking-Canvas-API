@@ -4,6 +4,14 @@
   A Google Sheets integration with Canvas LMS that allows educators to fetch student data, download grades, and upload grades directly between Google Sheets and Canvas.
 </p>
 
+<h2>🚀 Quick Start</h2>
+
+<p align="center">
+  <a href="https://docs.google.com/spreadsheets/d/18ZggFU-2xBdbl3pVPY3dXR-U5DYdroxvYaZJXGcvIPA/copy"><img src="https://img.shields.io/badge/Use_Template-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Use Google Sheet Template"></a>
+</p>
+
+<p align="center">Click the button above to create your own copy of the Canvas Tools template</p>
+
 <h2>✨ Features</h2>
 
 <ul>
