@@ -1,132 +1,228 @@
-Canvas Tools for Google Sheets
-A Google Sheets integration with Canvas LMS that allows educators to fetch student data, download grades, and upload grades directly between Google Sheets and Canvas.
-Features
+<h1 align="center">Canvas Tools for Google Sheets</h1>
 
-Fetch student data directly from Canvas into your spreadsheet
-Download grades for individual assignments or the complete gradebook
-Upload grades to Canvas individually or in bulk
-Progress tracking with helpful toast notifications
-Configurable setup through the spreadsheet (no code editing required)
+<p align="center">
+  A Google Sheets integration with Canvas LMS that allows educators to fetch student data, download grades, and upload grades directly between Google Sheets and Canvas.
+</p>
 
-Installation
-Option 1: Use the Template (Easiest)
+<p align="center">
+  <img src="screenshots/menu.png" alt="Canvas Tools Menu" width="250">
+</p>
 
-Open the template spreadsheet
-A copy will be created in your Google Drive with all code included
-Continue to the Setup section below
+<h2>✨ Features</h2>
 
-Option 2: Add to Your Existing Sheet
+<ul>
+  <li><strong>Fetch student data</strong> directly from Canvas into your spreadsheet</li>
+  <li><strong>Download grades</strong> for individual assignments or the complete gradebook</li>
+  <li><strong>Upload grades</strong> to Canvas individually or in bulk</li>
+  <li><strong>Progress tracking</strong> with helpful toast notifications</li>
+  <li><strong>Configurable setup</strong> through the spreadsheet (no code editing required)</li>
+</ul>
 
-Create or open a Google Sheet
-Go to Extensions > Apps Script
-Create the following files and copy the code from this repository:
+<h2>💾 Installation</h2>
 
-CanvasTools.gs
-UserFetch.gs
-GradeFetch.gs
-GradeUpload.gs
-ToastUtilities.gs
+<h3>Option 1: Use the Template (Easiest)</h3>
 
+<ol>
+  <li><a href="https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/template/preview">Open the template spreadsheet</a></li>
+  <li>A copy will be created in your Google Drive with all code included</li>
+  <li>Continue to the Setup section below</li>
+</ol>
 
-Save the project
-Refresh your spreadsheet
-You should now see a "Canvas Tools" menu
-Select "Canvas Tools > Setup Spreadsheet" from the menu
+<h3>Option 2: Add to Your Existing Sheet</h3>
 
-Setup
+<ol>
+  <li>Create or open a Google Sheet</li>
+  <li>Go to Extensions > Apps Script</li>
+  <li>Create the following files and copy the code from this repository:
+    <ul>
+      <li><code>CanvasTools.gs</code></li>
+      <li><code>UserFetch.gs</code></li>
+      <li><code>GradeFetch.gs</code></li>
+      <li><code>GradeUpload.gs</code></li>
+      <li><code>ToastUtilities.gs</code></li>
+    </ul>
+  </li>
+  <li>Save the project</li>
+  <li>Refresh your spreadsheet</li>
+  <li>You should now see a "Canvas Tools" menu</li>
+  <li>Select "Canvas Tools > Setup Spreadsheet" from the menu</li>
+</ol>
 
-After installation, select "Canvas Tools > Setup Spreadsheet" from the menu
-Enter your Canvas Course ID in cell B3
+<h2>🔧 Setup</h2>
 
-Find this in the URL when viewing your course: https://canvas.yourinstitution.edu/courses/12345
+<ol>
+  <li>After installation, select "Canvas Tools > Setup Spreadsheet" from the menu</li>
+  <li>Enter your Canvas Course ID in cell B3
+    <ul>
+      <li>Find this in the URL when viewing your course: <code>https://canvas.yourinstitution.edu/courses/12345</code></li>
+    </ul>
+  </li>
+  <li>Enter your Canvas Domain in cell B4 (e.g., https://canvas.chapman.edu)</li>
+  <li>For the API Key, you have two options:
+    <ul>
+      <li>Enter it directly in cell B5 (will be stored securely afterward)</li>
+      <li>Leave B5 blank and you'll be prompted when needed</li>
+    </ul>
+  </li>
+</ol>
 
+<p align="center">
+  <img src="screenshots/setup.png" alt="Setup Screen" width="600">
+</p>
 
-Enter your Canvas Domain in cell B4 (e.g., https://canvas.chapman.edu)
-For the API Key, you have two options:
+<h2>🔑 Generating a Canvas API Key</h2>
 
-Enter it directly in cell B5 (will be stored securely afterward)
-Leave B5 blank and you'll be prompted when needed
+<ol>
+  <li>Log into Canvas</li>
+  <li>Go to Account > Settings</li>
+  <li>Scroll to "Approved Integrations"</li>
+  <li>Click "New Access Token"</li>
+  <li>Enter a purpose (e.g., "Google Sheets Integration")</li>
+  <li>Set an expiration date if desired</li>
+  <li>Click "Generate Token"</li>
+  <li><strong>IMPORTANT:</strong> Copy the token immediately - you cannot view it again!</li>
+</ol>
 
+<p align="center">
+  <img src="screenshots/api_key.png" alt="Canvas API Key Generation" width="600">
+</p>
 
+<h2>📝 Usage</h2>
 
-Generating a Canvas API Key
+<h3>Fetching Student Data</h3>
 
-Log into Canvas
-Go to Account > Settings
-Scroll to "Approved Integrations"
-Click "New Access Token"
-Enter a purpose (e.g., "Google Sheets Integration")
-Set an expiration date if desired
-Click "Generate Token"
-IMPORTANT: Copy the token immediately - you cannot view it again!
+<ol>
+  <li>Ensure your Course ID and Canvas Domain are set</li>
+  <li>Click "Canvas Tools > Fetch Course Users"</li>
+  <li>Student data will populate in columns A-D starting at row 7</li>
+</ol>
 
-Usage
-Fetching Student Data
+<p align="center">
+  <img src="screenshots/student_data.png" alt="Student Data Example" width="600">
+</p>
 
-Ensure your Course ID and Canvas Domain are set
-Click "Canvas Tools > Fetch Course Users"
-Student data will populate in columns A-D starting at row 7
+<h3>Fetching Assignment Grades</h3>
 
-Fetching Assignment Grades
+<ol>
+  <li>In row 6 of column E (or any empty column), enter the Canvas Assignment ID
+    <ul>
+      <li>Find the Assignment ID in the URL when viewing the assignment:</li>
+      <li>Example: <code>https://canvas.chapman.edu/courses/12345/assignments/67890</code> → ID is 67890</li>
+    </ul>
+  </li>
+  <li>Click "Canvas Tools > Fetch Assignment Grades"</li>
+  <li>Enter the column letter when prompted (e.g., "E")</li>
+  <li>Grades will populate in that column aligned with student rows</li>
+</ol>
 
-In row 6 of column E (or any empty column), enter the Canvas Assignment ID
+<p align="center">
+  <img src="screenshots/assignment_grades.png" alt="Assignment Grades Example" width="600">
+</p>
 
-Find the Assignment ID in the URL when viewing the assignment:
-Example: https://canvas.chapman.edu/courses/12345/assignments/67890 → ID is 67890
+<h3>Fetching the Complete Gradebook</h3>
 
+<ol>
+  <li>Click "Canvas Tools > Fetch Complete Gradebook"</li>
+  <li>The spreadsheet will be populated with:
+    <ul>
+      <li>All assignments from Canvas (column E onwards)</li>
+      <li>Points possible for each assignment (row 3)</li>
+      <li>Average scores and percentages (rows 4-5)</li>
+      <li>Assignment IDs (row 6)</li>
+      <li>All student grades</li>
+    </ul>
+  </li>
+</ol>
 
-Click "Canvas Tools > Fetch Assignment Grades"
-Enter the column letter when prompted (e.g., "E")
-Grades will populate in that column aligned with student rows
+<h3>Uploading Individual Assignment Grades</h3>
 
-Fetching the Complete Gradebook
+<ol>
+  <li>Ensure the column contains the Assignment ID in row 6</li>
+  <li>Enter grades in the column aligned with student rows</li>
+  <li>Click "Canvas Tools > Upload Assignment Grades to Canvas"</li>
+  <li>When prompted, enter the column letter</li>
+  <li>A summary will appear when complete</li>
+</ol>
 
-Click "Canvas Tools > Fetch Complete Gradebook"
-The spreadsheet will be populated with:
+<h3>Uploading a Range of Grades</h3>
 
-All assignments from Canvas (column E onwards)
-Points possible for each assignment (row 3)
-Average scores and percentages (rows 4-5)
-Assignment IDs (row 6)
-All student grades
+<ol>
+  <li>Ensure Assignment IDs are in row 6 for all columns you want to upload</li>
+  <li>Enter grades in those columns</li>
+  <li>Click "Canvas Tools > Upload Grade Range to Canvas"</li>
+  <li>Enter the starting and ending column letters when prompted</li>
+  <li>A summary will appear when complete</li>
+</ol>
 
+<h3>Uploading the Complete Gradebook</h3>
 
+<ol>
+  <li>Click "Canvas Tools > Upload Complete Gradebook to Canvas"</li>
+  <li>Confirm the action when prompted</li>
+  <li>All grades in the sheet will be uploaded to Canvas</li>
+  <li>A summary will appear when complete</li>
+</ol>
 
-Uploading Individual Assignment Grades
+<h2>🔒 Security Considerations</h2>
 
-Ensure the column contains the Assignment ID in row 6
-Enter grades in the column aligned with student rows
-Click "Canvas Tools > Upload Assignment Grades to Canvas"
-When prompted, enter the column letter
-A summary will appear when complete
+<ul>
+  <li>Your Canvas API key provides access to your Canvas account</li>
+  <li>The key is stored securely in the Script Properties and not visible to others</li>
+  <li>When entered in cell B5, it will be read once and then stored securely</li>
+  <li>Before sharing your spreadsheet, use "Canvas Tools > Clear API Key" to remove it</li>
+</ul>
 
-Uploading a Range of Grades
+<h2>🐞 Troubleshooting</h2>
 
-Ensure Assignment IDs are in row 6 for all columns you want to upload
-Enter grades in those columns
-Click "Canvas Tools > Upload Grade Range to Canvas"
-Enter the starting and ending column letters when prompted
-A summary will appear when complete
+<table>
+  <thead>
+    <tr>
+      <th>Problem</th>
+      <th>Possible Solution</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>"API Key not found"</td>
+      <td>Enter your Canvas API key in cell B5 or when prompted</td>
+    </tr>
+    <tr>
+      <td>"Course ID not found"</td>
+      <td>Make sure you entered your Canvas Course ID in cell B3</td>
+    </tr>
+    <tr>
+      <td>"Canvas Domain missing"</td>
+      <td>Enter your institution's Canvas URL in cell B4</td>
+    </tr>
+    <tr>
+      <td>"Assignment ID not found"</td>
+      <td>Ensure row 6 contains the correct Assignment ID</td>
+    </tr>
+    <tr>
+      <td>No grades appear</td>
+      <td>Verify students have submissions in Canvas</td>
+    </tr>
+    <tr>
+      <td>Upload errors</td>
+      <td>Check you have permission to edit grades in Canvas</td>
+    </tr>
+  </tbody>
+</table>
 
-Uploading the Complete Gradebook
+<h2>📄 License</h2>
 
-Click "Canvas Tools > Upload Complete Gradebook to Canvas"
-Confirm the action when prompted
-All grades in the sheet will be uploaded to Canvas
-A summary will appear when complete
+<p>This project is licensed under the MIT License - see the <a href="LICENSE">LICENSE</a> file for details.</p>
 
-Security Considerations
+<h2>👤 Author</h2>
 
-Your Canvas API key provides access to your Canvas account
-The key is stored securely in the Script Properties and not visible to others
-When entered in cell B5, it will be read once and then stored securely
-Before sharing your spreadsheet, use "Canvas Tools > Clear API Key" to remove it
+<p>Your Name</p>
 
-Troubleshooting
-ProblemPossible Solution"API Key not found"Enter your Canvas API key in cell B5 or when prompted"Course ID not found"Make sure you entered your Canvas Course ID in cell B3"Canvas Domain missing"Enter your institution's Canvas URL in cell B4"Assignment ID not found"Ensure row 6 contains the correct Assignment IDNo grades appearVerify students have submissions in CanvasUpload errorsCheck you have permission to edit grades in Canvas
-License
-This project is licensed under the MIT License - see the LICENSE file for details.
-Author
-Your Name
-Contributing
-Contributions are welcome! Please feel free to submit a Pull Request.
+<h2>🤝 Contributing</h2>
+
+<p>Contributions are welcome! Please feel free to submit a Pull Request.</p>
+
+<hr>
+
+<p align="center">
+  <i>Note: This tool is not affiliated with or endorsed by Instructure (Canvas) or Google.</i>
+</p>
