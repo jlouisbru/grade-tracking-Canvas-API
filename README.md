@@ -64,28 +64,6 @@
   <li>Student data will populate in columns A-D starting at row 7</li>
 </ol>
 
-<p align="center">
-  <img src="screenshots/student_data.png" alt="Student Data Example" width="600">
-</p>
-
-<h3>Fetching Assignment Grades</h3>
-
-<ol>
-  <li>In row 6 of column E (or any empty column), enter the Canvas Assignment ID
-    <ul>
-      <li>Find the Assignment ID in the URL when viewing the assignment:</li>
-      <li>Example: <code>https://canvas.chapman.edu/courses/12345/assignments/67890</code> → ID is 67890</li>
-    </ul>
-  </li>
-  <li>Click "Canvas Tools > Fetch Assignment Grades"</li>
-  <li>Enter the column letter when prompted (e.g., "E")</li>
-  <li>Grades will populate in that column aligned with student rows</li>
-</ol>
-
-<p align="center">
-  <img src="screenshots/assignment_grades.png" alt="Assignment Grades Example" width="600">
-</p>
-
 <h3>Fetching the Complete Gradebook</h3>
 
 <ol>
@@ -99,6 +77,20 @@
       <li>All student grades</li>
     </ul>
   </li>
+</ol>
+
+<h3>Fetching Assignment Grades</h3>
+
+<ol>
+  <li>In row 6 of column E (or any empty column), enter the Canvas Assignment ID
+    <ul>
+      <li>Find the Assignment ID in the URL when viewing the assignment:</li>
+      <li>Example: <code>https://canvas.chapman.edu/courses/12345/assignments/67890</code> → ID is 67890</li>
+    </ul>
+  </li>
+  <li>Click "Canvas Tools > Fetch Assignment Grades"</li>
+  <li>Enter the column letter when prompted (e.g., "E")</li>
+  <li>Grades will populate in that column aligned with student rows</li>
 </ol>
 
 <h3>Uploading Individual Assignment Grades</h3>
@@ -136,7 +128,6 @@
   <li>Your Canvas API key provides access to your Canvas account</li>
   <li>The key is stored securely in the Script Properties and not visible to others</li>
   <li>When entered in cell B5, it will be read once and then stored securely</li>
-  <li>Before sharing your spreadsheet, use "Canvas Tools > Clear API Key" to remove it</li>
 </ul>
 
 <h2>🐞 Troubleshooting</h2>
