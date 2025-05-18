@@ -20,7 +20,7 @@
 
 <ol>
   <li><a href="https://docs.google.com/spreadsheets/d/18ZggFU-2xBdbl3pVPY3dXR-U5DYdroxvYaZJXGcvIPA/edit?usp=sharing">Open the template spreadsheet</a></li>
-  <li>A copy will be created in your Google Drive with all code included</li>
+  <li>Copy the spreadsheet to your Google Drive with all code included</li>
   <li>Continue to the Setup section below</li>
 </ol>
 
