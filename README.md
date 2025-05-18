@@ -182,9 +182,14 @@
   </tbody>
 </table>
 
-<h2>📄 License</h2>
+<h2>📄 Licensing</h2>
 
-<p>This project is licensed under the MIT License - see the <a href="LICENSE">LICENSE</a> file for details.</p>
+<p>Canvas Tools uses dual licensing:</p>
+
+<ul>
+  <li><strong>Code</strong>: All source code is licensed under the <a href="LICENSE">MIT License</a></li>
+  <li><strong>Documentation</strong>: All documentation, screenshots, and educational content are licensed under <a href="docs/LICENSE-DOCS.md">Creative Commons Attribution-ShareAlike 4.0 International License</a></li>
+</ul>
 
 <h2>👤 Author</h2>
 
