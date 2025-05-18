@@ -24,25 +24,6 @@
   <li>Continue to the Setup section below</li>
 </ol>
 
-<h3>Option 2: Add to Your Existing Sheet</h3>
-
-<ol>
-  <li>Create or open a Google Sheet</li>
-  <li>Go to Extensions > Apps Script</li>
-  <li>Create the following files and copy the code from this repository:
-    <ul>
-      <li><code>CanvasTools.gs</code></li>
-      <li><code>UserFetch.gs</code></li>
-      <li><code>GradeFetch.gs</code></li>
-      <li><code>GradeUpload.gs</code></li>
-      <li><code>ToastUtilities.gs</code></li>
-    </ul>
-  </li>
-  <li>Save the project</li>
-  <li>Refresh your spreadsheet</li>
-  <li>You should now see a "Canvas Tools" menu</li>
-</ol>
-
 <h2>🔧 Setup</h2>
 
 <ol>
