@@ -7,10 +7,8 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/github/license/jlouisbru/canvas-tools-for-sheets" alt="License"></a>
   <a href="https://github.com/jlouisbru/canvas-tools-for-sheets/releases/latest"><img src="https://img.shields.io/github/v/release/jlouisbru/canvas-tools-for-sheets" alt="Latest Release"></a>
-  <img src="https://img.shields.io/badge/platform-Google%20Sheets-green" alt="Platform">
-  <img src="https://img.shields.io/badge/status-active-success" alt="Status">
+  <a href="https://docs.google.com/spreadsheets/d/18ZggFU-2xBdbl3pVPY3dXR-U5DYdroxvYaZJXGcvIPA/edit?usp=sharing"><img src="https://img.shields.io/badge/platform-Google%20Sheets-green" alt="Platform"></a>
   <a href="https://ko-fi.com/louisfr"><img src="https://img.shields.io/badge/Support-Ko--fi-ff5f5f" alt="Support on Ko-fi"></a>
-  <img src="https://img.shields.io/badge/made%20for-education-9cf" alt="Made for Education">
 </p>
 
 <h2>🚀 Quick Start</h2>
