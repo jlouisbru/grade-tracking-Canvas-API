@@ -16,7 +16,7 @@
 
 <h2>💾 Installation</h2>
 
-<h3>Option 1: Use the Template (Easiest)</h3>
+<h3>Use the Template</h3>
 
 <ol>
   <li><a href="https://docs.google.com/spreadsheets/d/18ZggFU-2xBdbl3pVPY3dXR-U5DYdroxvYaZJXGcvIPA/edit?usp=sharing">Open the template spreadsheet</a></li>
