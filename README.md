@@ -35,8 +35,8 @@
   <li>Enter your Canvas Domain in cell B4 (e.g., https://canvas.chapman.edu)</li>
   <li>For the API Key, you have two options:
     <ul>
-      <li>Enter it directly in cell B5 (will be stored securely afterward)</li>
       <li>Leave B5 blank and you'll be prompted when needed</li>
+      <li>Enter it directly in cell B5 (not recommended, less secured)</li>
     </ul>
   </li>
 </ol>
