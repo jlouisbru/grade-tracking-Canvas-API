@@ -185,3 +185,13 @@
 <p align="center">
   <i>Note: This tool is not affiliated with or endorsed by Instructure (Canvas) or Google.</i>
 </p>
+
+<h2>🐛 Issues and Feedback</h2>
+
+<p>Found a bug or have a suggestion to improve Canvas Tools? We'd love to hear from you!</p>
+
+<ul>
+  <li><a href="https://github.com/jlouisbru/canvas-tools-for-sheets/issues/new?template=bug_report.md">Report a Bug</a></li>
+  <li><a href="https://github.com/jlouisbru/canvas-tools-for-sheets/issues/new?template=feature_request.md">Request a Feature</a></li>
+  <li><a href="https://github.com/jlouisbru/canvas-tools-for-sheets/issues">View All Issues</a></li>
+</ul>
