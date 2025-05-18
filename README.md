@@ -41,10 +41,6 @@
   </li>
 </ol>
 
-<p align="center">
-  <img src="screenshots/setup.png" alt="Setup Screen" width="600">
-</p>
-
 <h2>🔑 Generating a Canvas API Key</h2>
 
 <ol>
