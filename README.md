@@ -54,10 +54,6 @@
   <li><strong>IMPORTANT:</strong> Copy the token immediately - you cannot view it again!</li>
 </ol>
 
-<p align="center">
-  <img src="screenshots/api_key.png" alt="Canvas API Key Generation" width="600">
-</p>
-
 <h2>📝 Usage</h2>
 
 <h3>Fetching Student Data</h3>
