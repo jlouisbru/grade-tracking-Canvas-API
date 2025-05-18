@@ -19,7 +19,7 @@
 <h3>Option 1: Use the Template (Easiest)</h3>
 
 <ol>
-  <li><a href="[https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/template/preview](https://docs.google.com/spreadsheets/d/18ZggFU-2xBdbl3pVPY3dXR-U5DYdroxvYaZJXGcvIPA/edit?usp=sharing)">Open the template spreadsheet</a></li>
+  <li><a href="https://docs.google.com/spreadsheets/d/18ZggFU-2xBdbl3pVPY3dXR-U5DYdroxvYaZJXGcvIPA/edit?usp=sharing">Open the template spreadsheet</a></li>
   <li>A copy will be created in your Google Drive with all code included</li>
   <li>Continue to the Setup section below</li>
 </ol>
