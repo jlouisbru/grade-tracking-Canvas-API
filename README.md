@@ -205,9 +205,9 @@
 <p>Found a bug or have a suggestion to improve Canvas Tools? We'd love to hear from you!</p>
 
 <p>
-  <a href="https://github.com/jlouisbru/canvas-tools-for-sheets/issues/new?template=bug_report.yml"><img src="https://img.shields.io/badge/Report-Bug-red?style=for-the-badge&logo=github" alt="Report Bug"></a>
-  <a href="https://github.com/jlouisbru/canvas-tools-for-sheets/issues/new?template=feature_request.yml"><img src="https://img.shields.io/badge/Request-Feature-blue?style=for-the-badge&logo=github" alt="Request Feature"></a>
-  <a href="https://github.com/jlouisbru/canvas-tools-for-sheets/issues"><img src="https://img.shields.io/badge/View-Issues-green?style=for-the-badge&logo=github" alt="View Issues"></a>
+  <a href="https://github.com/jlouisbru/grade-tracking-Canvas-API/issues/new?template=bug_report.yml"><img src="https://img.shields.io/badge/Report-Bug-red?style=for-the-badge&logo=github" alt="Report Bug"></a>
+  <a href="https://github.com/jlouisbru/grade-tracking-Canvas-API/issues/new?template=feature_request.yml"><img src="https://img.shields.io/badge/Request-Feature-blue?style=for-the-badge&logo=github" alt="Request Feature"></a>
+  <a href="https://github.com/jlouisbru/grade-tracking-Canvas-API/issues"><img src="https://img.shields.io/badge/View-Issues-green?style=for-the-badge&logo=github" alt="View Issues"></a>
 </p>
 
 <hr>
