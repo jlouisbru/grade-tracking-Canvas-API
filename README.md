@@ -184,11 +184,11 @@
 
 <p>Found a bug or have a suggestion to improve Canvas Tools? We'd love to hear from you!</p>
 
-<ul>
-  <li><a href="https://github.com/jlouisbru/canvas-tools-for-sheets/ISSUE_TEMPLATE/bug_report.yml">Report a Bug</a></li>
-  <li><a href="https://github.com/jlouisbru/canvas-tools-for-sheets/ISSUE_TEMPLATE/feature_request.yml">Request a Feature</a></li>
-  <li><a href="https://github.com/jlouisbru/canvas-tools-for-sheets/issues">View All Issues</a></li>
-</ul>
+<p>
+  <a href="https://github.com/jlouisbru/canvas-tools-for-sheets/issues/new?template=bug_report.yml"><img src="https://img.shields.io/badge/Report-Bug-red?style=for-the-badge&logo=github" alt="Report Bug"></a>
+  <a href="https://github.com/jlouisbru/canvas-tools-for-sheets/issues/new?template=feature_request.yml"><img src="https://img.shields.io/badge/Request-Feature-blue?style=for-the-badge&logo=github" alt="Request Feature"></a>
+  <a href="https://github.com/jlouisbru/canvas-tools-for-sheets/issues"><img src="https://img.shields.io/badge/View-Issues-green?style=for-the-badge&logo=github" alt="View Issues"></a>
+</p>
 
 <hr>
 
