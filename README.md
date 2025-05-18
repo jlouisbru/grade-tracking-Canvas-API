@@ -27,7 +27,6 @@
 <h2>🔧 Setup</h2>
 
 <ol>
-  <li>After installation, select "Canvas Tools > Setup Spreadsheet" from the menu</li>
   <li>Enter your Canvas Course ID in cell B3
     <ul>
       <li>Find this in the URL when viewing your course: <code>https://canvas.yourinstitution.edu/courses/12345</code></li>
