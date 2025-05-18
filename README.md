@@ -4,10 +4,6 @@
   A Google Sheets integration with Canvas LMS that allows educators to fetch student data, download grades, and upload grades directly between Google Sheets and Canvas.
 </p>
 
-<p align="center">
-  <img src="screenshots/menu.png" alt="Canvas Tools Menu" width="250">
-</p>
-
 <h2>✨ Features</h2>
 
 <ul>
