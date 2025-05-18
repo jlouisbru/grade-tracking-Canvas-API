@@ -185,8 +185,8 @@
 <p>Found a bug or have a suggestion to improve Canvas Tools? We'd love to hear from you!</p>
 
 <ul>
-  <li><a href="https://github.com/jlouisbru/canvas-tools-for-sheets/issues/new?template=bug_report.md">Report a Bug</a></li>
-  <li><a href="https://github.com/jlouisbru/canvas-tools-for-sheets/issues/new?template=feature_request.md">Request a Feature</a></li>
+  <li><a href="https://github.com/jlouisbru/canvas-tools-for-sheets/ISSUE_TEMPLATE/bug_report.yml">Report a Bug</a></li>
+  <li><a href="https://github.com/jlouisbru/canvas-tools-for-sheets/ISSUE_TEMPLATE/feature_request.yml">Request a Feature</a></li>
   <li><a href="https://github.com/jlouisbru/canvas-tools-for-sheets/issues">View All Issues</a></li>
 </ul>
 
