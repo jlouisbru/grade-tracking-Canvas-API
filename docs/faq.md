@@ -31,3 +31,20 @@ Your API key is stored securely in the Script Properties of your spreadsheet and
 
 ### Does Canvas Tools access any student data beyond grades?
 Canvas Tools only accesses the data needed for the functions you use: student names, SIS IDs, email addresses, and assignment grades.
+
+## Privacy & Compliance Questions
+
+### Is Canvas Tools FERPA compliant?
+Canvas Tools is designed to work within FERPA guidelines by:
+1. Only transferring data between systems you already have authorized access to (Canvas and Google Workspace)
+2. Not storing any student data on third-party servers
+3. Using secure API connections for all data transfers
+4. Maintaining the same level of privacy protection provided by Canvas and Google Workspace
+
+Remember that you as an educator are still responsible for ensuring your use of any tool, including Canvas Tools, complies with your institution's policies and applicable laws.
+
+### Who can see the student data I import into Google Sheets?
+Anyone you share your Google Sheet with will be able to see the student data. Make sure you only share your spreadsheet with authorized individuals who have a legitimate educational interest in the information, as required by FERPA.
+
+### Do I need special permission from my institution to use Canvas Tools?
+While Canvas Tools is designed to work within existing data processing agreements your institution likely has with both Canvas and Google, you should check your institution's policies regarding the use of third-party tools and APIs with student data. Some institutions may require approval for tools that access their LMS data.
