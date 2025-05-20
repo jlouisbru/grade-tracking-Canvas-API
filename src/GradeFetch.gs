@@ -320,7 +320,8 @@ function fetchCompleteCanvasGradebook() {
     
     // --- 2. Fetch Users from Canvas ---
     Logger.log('Fetching users from Canvas...');
-    const users = fetchAllCanvasUsers_(courseId, token, CANVAS_DOMAIN);
+    // Pass apiKey instead of undefined 'token'
+    const users = fetchAllCanvasUsers_(courseId, apiKey, canvasDomain);
     if (users.length === 0) {
       ui.alert('No users found for Course ID ' + courseId + '. Check the Course ID and API permissions.');
       return;
@@ -332,7 +333,8 @@ function fetchCompleteCanvasGradebook() {
     
     // --- 3. Fetch Assignments from Canvas ---
     Logger.log('Fetching assignments from Canvas...');
-    const assignments = fetchCanvasAssignments_(courseId, token, CANVAS_DOMAIN);
+    // Pass apiKey instead of undefined 'token'
+    const assignments = fetchCanvasAssignments_(courseId, apiKey, canvasDomain);
     if (assignments.length === 0) {
       ui.alert('No assignments found for Course ID ' + courseId + '. Check the Course ID and API permissions.');
       return;
@@ -344,7 +346,8 @@ function fetchCompleteCanvasGradebook() {
     
     // --- 4. Fetch Complete Gradebook from Canvas ---
     Logger.log('Fetching complete gradebook from Canvas...');
-    const gradebook = fetchCanvasGradebook_(courseId, token, CANVAS_DOMAIN);
+    // Pass apiKey instead of undefined 'token'
+    const gradebook = fetchCanvasGradebook_(courseId, apiKey, canvasDomain);
     Logger.log(`Successfully fetched gradebook data for ${Object.keys(gradebook).length} students.`);
     
     // Show toast notifications
@@ -399,9 +402,9 @@ function fetchAllCanvasUsers_(courseId, apiToken, canvasDomain) {
     if (responseCode === 200) {
       const users = JSON.parse(responseBody);
       if (users && users.length > 0) {
-         allUsers = allUsers.concat(users);
+          allUsers = allUsers.concat(users);
       } else {
-         nextPageUrl = null;
+          nextPageUrl = null;
       }
       const linkHeader = response.getHeaders()['Link'] || response.getHeaders()['link'];
       nextPageUrl = parseLinkHeader_(linkHeader);
@@ -445,9 +448,9 @@ function fetchCanvasAssignments_(courseId, apiToken, canvasDomain) {
     if (responseCode === 200) {
       const assignments = JSON.parse(responseBody);
       if (assignments && assignments.length > 0) {
-         allAssignments = allAssignments.concat(assignments);
+          allAssignments = allAssignments.concat(assignments);
       } else {
-         nextPageUrl = null;
+          nextPageUrl = null;
       }
       const linkHeader = response.getHeaders()['Link'] || response.getHeaders()['link'];
       nextPageUrl = parseLinkHeader_(linkHeader);
@@ -683,7 +686,7 @@ function writeGradebookToSheet_(sheet, users, assignments, gradebook) {
   });
   
   // Freeze the header rows and user info columns
-  sheet.setFrozenRows(6);  // Freeze through row 6
+  sheet.setFrozenRows(6);   // Freeze through row 6
   sheet.setFrozenColumns(4); // Freeze columns A-D
   
   Logger.log('Finished writing gradebook data to sheet.');
