@@ -298,12 +298,9 @@ function fetchCompleteCanvasGradebook() {
     return;
   }
   
-  // Get or create the Gradebook sheet
-  let gradebookSheet = ss.getSheetByName("Gradebook");
-  if (!gradebookSheet) {
-    gradebookSheet = ss.insertSheet("Gradebook");
-    Logger.log("Created new 'Gradebook' sheet");
-  }
+  // Use the active sheet instead of looking for "Gradebook"
+  let gradebookSheet = ss.getActiveSheet();
+  Logger.log("Using the active sheet for gradebook operations.");
   
   // --- 1. Get Course ID ---
   const courseId = gradebookSheet.getRange(COURSE_ID_CELL).getValue();
