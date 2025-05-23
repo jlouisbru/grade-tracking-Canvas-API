@@ -9,7 +9,7 @@ A Google Sheets integration with Canvas LMS that allows educators to fetch stude
 
 ## 🚀 Quick Start
 
-[![Use Google Sheet Template](https://img.shields.io/badge/Use_Template-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://docs.google.com/spreadsheets/d/18ZggFU-2xBdbl3pVPY3dXR-U5DYdroxvYaZJXGcvIPA/copy)
+[![Use Google Sheet Template](https://img.shields.io/badge/Use_Template-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://docs.google.com/spreadsheets/d/18ZggFU-2xBdbl3pVPY3dXR-U5DYdroxvYaZJXGcvIPA/)
 
 Click the button above to create your own copy of the Canvas Tools template
 
