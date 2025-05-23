@@ -1,4 +1,4 @@
-# Contributing to Canvas Tools for Sheets
+# Contributing to Grade Tracking with Canvas API for Google Sheets
 
 Thank you for considering contributing to Canvas Tools! This guide explains how to contribute to the project.
 
