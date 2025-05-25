@@ -141,7 +141,7 @@ function updateCanvasGrades_(gradeColumn) {
 
     // Call the helper function to update Canvas for this student
     // It will use the global CANVAS_DOMAIN
-    const updateResult = updateGradeInCanvas_(accessToken, courseId, assignmentId, studentId, gradeToUpload);
+    const updateResult = updateGradeInCanvas_(apiKey, courseId, assignmentId, studentId, gradeToUpload);
 
     if (updateResult.success) {
       successCount++;
