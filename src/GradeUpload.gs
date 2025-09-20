@@ -187,7 +187,7 @@ function updateCanvasGrades_(gradeColumn) {
 /**
  * Sends the grade update request to the Canvas API for a single student.
  * Uses the global CANVAS_DOMAIN constant.
- * @param {string} accessToken    Canvas API access token.
+ * @param {string} apiKey    Canvas API access token.
  * @param {string|number} courseId     Canvas Course ID.
  * @param {string|number} assignmentId Canvas Assignment ID.
  * @param {string} studentId      The student SIS User ID.
@@ -195,7 +195,7 @@ function updateCanvasGrades_(gradeColumn) {
  * @return {object} An object {success: boolean, message: string}.
  * @private
  */
-function updateGradeInCanvas_(accessToken, courseId, assignmentId, studentId, grade) {
+function updateGradeInCanvas_(apiKey, courseId, assignmentId, studentId, grade) {
   // Get Canvas Domain
   const canvasDomain = getCanvasDomain();
   if (!canvasDomain) {
@@ -219,7 +219,7 @@ function updateGradeInCanvas_(accessToken, courseId, assignmentId, studentId, gr
   const options = {
     method: 'put',
     headers: {
-      'Authorization': `Bearer ${accessToken}`,
+      'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json'
     },
     payload: JSON.stringify(payload),
