@@ -3,7 +3,7 @@
 A Google Sheets integration with Canvas LMS that allows educators to fetch student data, download grades, and upload grades directly between Google Sheets and Canvas.
 
 [![License](https://img.shields.io/github/license/jlouisbru/canvas-tools-for-sheets)](LICENSE)
-[![Latest Release](https://img.shields.io/github/v/release/jlouisbru/canvas-tools-for-sheets)](https://github.com/jlouisbru/canvas-tools-for-sheets/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/release/jlouisbru/grade-tracking-Canvas-API)](https://github.com/jlouisbru/grade-tracking-Canvas-API/releases/latest)
 [![Platform](https://img.shields.io/badge/platform-Google%20Sheets-green)](https://docs.google.com/spreadsheets/d/18ZggFU-2xBdbl3pVPY3dXR-U5DYdroxvYaZJXGcvIPA/edit?usp=sharing)
 [![Support on Ko-fi](https://img.shields.io/badge/Support-Ko--fi-ff5f5f)](https://ko-fi.com/louisfr)
 
