@@ -83,8 +83,8 @@ function updateCanvasGrades_(gradeColumn) {
   }
   // Read only the necessary columns (SIS ID and Grade Column) for efficiency
   // Uses SIS_ID_COLUMN and FIRST_DATA_ROW from config
-  const studentIdColNum = columnToNumber_(SIS_ID_COLUMN);
-  const gradeColNum = columnToNumber_(gradeColumn);
+  const studentIdColNum = columnLetterToNumber_(SIS_ID_COLUMN);
+  const gradeColNum = columnLetterToNumber_(gradeColumn);
   const firstCol = Math.min(studentIdColNum, gradeColNum);
   const lastCol = Math.max(studentIdColNum, gradeColNum);
   const numCols = lastCol - firstCol + 1;
@@ -268,23 +268,6 @@ function updateGradeInCanvas_(apiKey, courseId, assignmentId, studentId, grade) 
 }
 
 /**
- * Converts a column letter (A, B, ..., Z, AA, AB, ...) to its 1-based column number.
- * @param {string} column The column letter(s).
- * @return {number} The 1-based column number.
- * @private
- */
-function columnToNumber_(column) { // Renamed slightly to indicate private use
-  let result = 0;
-  column = column.toUpperCase(); // Ensure uppercase
-  for (let i = 0; i < column.length; i++) {
-    result *= 26;
-    // Character code for 'A' is 65. Subtract 64 to get 1 for 'A', 2 for 'B', etc.
-    result += column.charCodeAt(i) - 64;
-  }
-  return result;
-}
-
-/**
  * ==========================================================================
  * SCRIPT TO UPLOAD CANVAS GRADES
  * Contains functions for uploading grades to Canvas.
@@ -332,37 +315,41 @@ function uploadGradebookToCanvas_() {
     return;
   }
   Logger.log(`Using Course ID: ${courseId}`);
-  
+
+  // --- Get Canvas Domain ---
+  const canvasDomain = getCanvasDomain();
+  if (!canvasDomain) return;
+
   try {
-    // Define row structure 
+    // Define row structure
     const assignmentIdRow = 6;
     const firstDataRow = 7;
     const firstAssignmentCol = 5; // Column E
     const lastCol = sheet.getLastColumn();
-    
+
     // Exit if there are no assignment columns
     if (lastCol < firstAssignmentCol) {
       ui.alert('No assignment columns found. Please fetch the gradebook first.');
       return;
     }
-    
+
     // Get assignment IDs from row 6
     const assignmentIds = sheet.getRange(assignmentIdRow, firstAssignmentCol, 1, lastCol - firstAssignmentCol + 1).getValues()[0];
-    
+
     // Get SIS User IDs from column C and corresponding Canvas grades
     const lastRow = sheet.getLastRow();
     if (lastRow < firstDataRow) {
       ui.alert('No student data found.');
       return;
     }
-    
+
     const sisUserIds = sheet.getRange(`C${firstDataRow}:C${lastRow}`).getValues();
     const gradesData = sheet.getRange(firstDataRow, firstAssignmentCol, lastRow - firstDataRow + 1, lastCol - firstAssignmentCol + 1).getValues();
-    
+
     // Fetch Canvas users to get their IDs
     ToastManager.showToast('Fetching Canvas users...', 'Gradebook Upload: Step 1/3', 30);
     Logger.log('Fetching Canvas users to get IDs...');
-    const users = fetchAllCanvasUsers_(courseId, apiKey, CANVAS_DOMAIN);
+    const users = fetchAllCanvasUsers_(courseId, apiKey, canvasDomain);
     
     // Create lookup map of SIS User ID to Canvas User ID
     const userIdLookup = {};
@@ -437,7 +424,7 @@ function uploadGradebookToCanvas_() {
         // Upload the grade to Canvas
         try {
           // Define the endpoint for updating a grade for a specific assignment and user
-          const url = `${CANVAS_DOMAIN}/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${canvasUserId}`;
+          const url = `${canvasDomain}/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${canvasUserId}`;
           
           const payload = {
             'submission': {
@@ -613,24 +600,28 @@ function uploadGradeRangeToCanvas_(startColNum, endColNum) {
     return;
   }
   Logger.log(`Using Course ID: ${courseId}`);
-  
+
+  // --- Get Canvas Domain ---
+  const canvasDomain = getCanvasDomain();
+  if (!canvasDomain) return;
+
   try {
-    // Define row structure 
+    // Define row structure
     const assignmentIdRow = 6;
     const firstDataRow = 7;
-    
+
     // Calculate the number of columns to upload
     const numCols = endColNum - startColNum + 1;
-    
+
     // Exit if startColNum is less than 5 (Column E)
     if (startColNum < 5) {
       ui.alert('Error: Starting column must be column E or later (student data is in columns A-D).');
       return;
     }
-    
+
     // Get assignment IDs from row 6 for the specified range
     const assignmentIds = sheet.getRange(assignmentIdRow, startColNum, 1, numCols).getValues()[0];
-    
+
     // Check if there are valid assignment IDs
     let hasValidIds = false;
     for (let i = 0; i < assignmentIds.length; i++) {
@@ -639,26 +630,26 @@ function uploadGradeRangeToCanvas_(startColNum, endColNum) {
         break;
       }
     }
-    
+
     if (!hasValidIds) {
       ui.alert('No valid assignment IDs found in row 6 of the selected columns. Please ensure the gradebook is properly set up.');
       return;
     }
-    
+
     // Get SIS User IDs from column C and corresponding Canvas grades
     const lastRow = sheet.getLastRow();
     if (lastRow < firstDataRow) {
       ui.alert('No student data found.');
       return;
     }
-    
+
     const sisUserIds = sheet.getRange(`C${firstDataRow}:C${lastRow}`).getValues();
     const gradesData = sheet.getRange(firstDataRow, startColNum, lastRow - firstDataRow + 1, numCols).getValues();
-    
+
     // Fetch Canvas users to get their IDs
     ToastManager.showToast('Fetching Canvas users...', 'Grade Range Upload: Step 1/3', 30);
     Logger.log('Fetching Canvas users to get IDs...');
-    const users = fetchAllCanvasUsers_(courseId, apiKey, CANVAS_DOMAIN);
+    const users = fetchAllCanvasUsers_(courseId, apiKey, canvasDomain);
     
     // Create lookup map of SIS User ID to Canvas User ID
     const userIdLookup = {};
@@ -733,7 +724,7 @@ function uploadGradeRangeToCanvas_(startColNum, endColNum) {
         // Upload the grade to Canvas
         try {
           // Define the endpoint for updating a grade for a specific assignment and user
-          const url = `${CANVAS_DOMAIN}/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${canvasUserId}`;
+          const url = `${canvasDomain}/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${canvasUserId}`;
           
           const payload = {
             'submission': {

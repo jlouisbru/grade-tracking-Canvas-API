@@ -113,40 +113,6 @@ const ASSIGNMENT_ID_HEADER_ROW = 6;
 
 
 /**
- * Gets the Canvas domain from the spreadsheet cell B4.
- * If the cell is empty or invalid, uses a default domain or shows an error.
- * @return {string} The Canvas domain URL.
- */
-function getCanvasDomain() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  const domainFromCell = sheet.getRange(CANVAS_DOMAIN_CELL).getValue();
-  
-  // Validate the domain
-  if (!domainFromCell) {
-    // If empty, alert the user and provide a default
-    SpreadsheetApp.getUi().alert(
-      'Canvas Domain Missing',
-      `Please enter your Canvas domain URL in cell ${CANVAS_DOMAIN_CELL} (e.g., https://canvas.chapman.edu)`,
-      SpreadsheetApp.getUi().ButtonSet.OK
-    );
-    return ''; // Return empty to cause function to exit in calling code
-  }
-  
-  // Ensure domain starts with https://
-  let formattedDomain = domainFromCell.trim();
-  if (!formattedDomain.startsWith('http://') && !formattedDomain.startsWith('https://')) {
-    formattedDomain = 'https://' + formattedDomain;
-  }
-  
-  // Remove trailing slash if present
-  if (formattedDomain.endsWith('/')) {
-    formattedDomain = formattedDomain.slice(0, -1);
-  }
-  
-  return formattedDomain;
-}
-
-/**
  * Gets the Canvas API key, checking in the following order:
  * 1. Cell B5 in the spreadsheet
  * 2. Script Properties

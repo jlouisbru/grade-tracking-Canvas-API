@@ -221,53 +221,6 @@ function fetchCanvasGradesBySisId_(gradeOutputColumn) {
 }
 
 
-// --- Helper Functions ---
-
-/**
- * Parses the 'Link' header from Canvas API responses to find the 'next' page URL.
- * @param {string} linkHeader The 'Link' header string.
- * @return {string|null} The URL for the next page, or null if not found.
- * @private
- */
-function parseLinkHeader_(linkHeader) {
-  if (!linkHeader) {
-    return null;
-  }
-  // Example header: <url1>; rel="current", <url2>; rel="next", <url3>; rel="first", <url4>; rel="last"
-  const links = linkHeader.split(',');
-  for (let i = 0; i < links.length; i++) {
-      const link = links[i].trim();
-      const parts = link.split(';');
-      if (parts.length >= 2) {
-          const urlPart = parts[0].trim();
-          const relPart = parts[1].trim();
-          if (relPart === 'rel="next"') {
-              const match = urlPart.match(/<(.*?)>/);
-              if (match && match[1]) {
-                  return match[1]; // Return the URL inside <>
-              }
-          }
-      }
-  }
-  return null; // No 'next' link found
-}
-
-/**
- * Converts a column letter (A, B, ..., Z, AA, AB, ...) to its 1-based column number.
- * @param {string} letter The column letter(s).
- * @return {number} The 1-based column number.
- * @private
- */
-function columnLetterToNumber_(letter) {
-  let column = 0;
-  const length = letter.length;
-  for (let i = 0; i < length; i++) {
-    // Ensure uppercase for calculation
-    column += (letter.toUpperCase().charCodeAt(i) - 64) * Math.pow(26, length - i - 1);
-  }
-  return column;
-}
-
 /**
  * ==========================================================================
  * SCRIPT TO FETCH COMPLETE CANVAS GRADEBOOK
