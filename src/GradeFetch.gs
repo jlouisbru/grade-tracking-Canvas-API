@@ -482,152 +482,122 @@ function fetchCanvasGradebook_(courseId, apiToken, canvasDomain) {
  */
 function writeGradebookToSheet_(sheet, users, assignments, gradebook) {
   Logger.log('Preparing to write gradebook data to sheet...');
-  
-  // Don't clear the entire sheet - preserve columns A-D and row 2
+
   const firstAssignmentCol = 5; // Column E
+
+  // Clear existing assignment columns, preserving columns A-D and row 2
   const lastCol = sheet.getLastColumn();
   if (lastCol >= firstAssignmentCol) {
-    // Clear all rows except row 2
     sheet.getRange(1, firstAssignmentCol, 1, lastCol - firstAssignmentCol + 1).clear(); // Row 1
     sheet.getRange(3, firstAssignmentCol, sheet.getLastRow() - 2, lastCol - firstAssignmentCol + 1).clear(); // Row 3 onwards
   }
-  
-  // Define row structure according to requirements
+
+  // Row layout (rows 1-6 are headers; FIRST_DATA_ROW+ is student data)
   const assignmentNameRow = 1;
-  // Row 2 is left untouched as requested
+  // Row 2 is left untouched
   const totalPointsRow = 3;
   const avgScoreRow = 4;
   const avgPercentRow = 5;
-  const assignmentIdRow = 6;
-  const firstDataRow = 7; // Student data starts at row 7
-  
-  // Set up assignment headers
-  let currentCol = firstAssignmentCol;
-  
-  // Group assignments by group_id/category and sort them
+  // ASSIGNMENT_ID_HEADER_ROW (6) holds assignment IDs
+
+  // Group assignments by assignment_group_id
   const assignmentGroups = {};
   assignments.forEach(assignment => {
     const groupId = assignment.assignment_group_id || 0;
-    if (!assignmentGroups[groupId]) {
-      assignmentGroups[groupId] = [];
-    }
+    if (!assignmentGroups[groupId]) assignmentGroups[groupId] = [];
     assignmentGroups[groupId].push(assignment);
   });
-  
-  // Track assignment columns for statistics calculation
-  const assignmentColumns = [];
-  
-  // Set up assignment headers
+
+  // Build ordered list of assignments and collect header data
+  const assignmentColumns = []; // {column, id, points}
+  const headerNames = [];
+  const headerPoints = [];
+  const headerIds = [];
+  let currentCol = firstAssignmentCol;
+
   for (const groupId in assignmentGroups) {
-    const groupAssignments = assignmentGroups[groupId];
-    
-    if (groupAssignments.length > 0) {
-      // For each assignment in the group
-      groupAssignments.forEach(assignment => {
-        const name = assignment.name;
-        const points = assignment.points_possible;
-        const id = assignment.id;
-        
-        // Store assignment column information for statistics calculation later
-        assignmentColumns.push({
-          column: currentCol,
-          id: id,
-          points: points
-        });
-        
-        // Write assignment info according to the required rows
-        sheet.getRange(assignmentNameRow, currentCol).setValue(name);
-        sheet.getRange(totalPointsRow, currentCol).setValue(points);
-        sheet.getRange(assignmentIdRow, currentCol).setValue(id);
-        
-        // No notes added to cells in row 1 as requested
-        
-        currentCol++;
-      });
-    }
+    assignmentGroups[groupId].forEach(assignment => {
+      assignmentColumns.push({ column: currentCol, id: assignment.id, points: assignment.points_possible });
+      headerNames.push(assignment.name);
+      headerPoints.push(assignment.points_possible);
+      headerIds.push(assignment.id);
+      currentCol++;
+    });
   }
-  
-  // Create a map of SIS User IDs to user objects for easy lookup
+
+  const numAssignmentCols = assignmentColumns.length;
+  if (numAssignmentCols === 0) {
+    Logger.log('No assignments to write.');
+    return;
+  }
+
+  // Batch write all assignment header rows at once
+  sheet.getRange(assignmentNameRow, firstAssignmentCol, 1, numAssignmentCols).setValues([headerNames]);
+  sheet.getRange(totalPointsRow, firstAssignmentCol, 1, numAssignmentCols).setValues([headerPoints]);
+  sheet.getRange(ASSIGNMENT_ID_HEADER_ROW, firstAssignmentCol, 1, numAssignmentCols).setValues([headerIds]);
+
+  // Build SIS User ID → user object lookup
   const usersBySisId = {};
   users.forEach(user => {
-    const sisUserId = user.sis_user_id;
-    if (sisUserId) {
-      usersBySisId[sisUserId] = user;
-    }
+    if (user.sis_user_id) usersBySisId[user.sis_user_id] = user;
   });
-  
-  // Get SIS User IDs from the spreadsheet to match the existing order
-  const sisIdRange = sheet.getRange(`C${firstDataRow}:C${sheet.getLastRow()}`);
-  const sheetSisIds = sisIdRange.getValues();
-  
-  // Track statistics for each assignment
-  const statsData = {};
-  assignmentColumns.forEach(info => {
-    statsData[info.column] = {
-      scores: [],
-      totalPoints: info.points
-    };
-  });
-  
-  // Match grades to existing students by SIS ID
-  for (let i = 0; i < sheetSisIds.length; i++) {
+
+  // Get student SIS IDs from the sheet to match the existing row order
+  const sheetSisIds = sheet.getRange(`C${FIRST_DATA_ROW}:C${sheet.getLastRow()}`).getValues();
+  const numStudents = sheetSisIds.length;
+
+  // Build grade matrix and collect per-assignment scores for statistics
+  const gradeMatrix = Array.from({ length: numStudents }, () => new Array(numAssignmentCols).fill(''));
+  const columnScores = assignmentColumns.map(() => []); // scores[j] = numeric scores for assignment j
+
+  for (let i = 0; i < numStudents; i++) {
     const sisId = sheetSisIds[i][0];
-    if (!sisId) continue; // Skip empty rows
-    
-    const rowIndex = i + firstDataRow;
+    if (!sisId) continue;
     const user = usersBySisId[sisId];
-    
-    if (user && gradebook[user.id]) {
-      // For each assignment, add the score to the appropriate column
-      assignmentColumns.forEach(assignmentInfo => {
-        const score = gradebook[user.id][assignmentInfo.id];
-        if (score !== null && score !== undefined) {
-          sheet.getRange(rowIndex, assignmentInfo.column).setValue(score);
-          
-          // Track this score for statistics calculation
-          statsData[assignmentInfo.column].scores.push(score);
-        }
-      });
+    if (!user || !gradebook[user.id]) continue;
+    for (let j = 0; j < numAssignmentCols; j++) {
+      const score = gradebook[user.id][assignmentColumns[j].id];
+      if (score !== null && score !== undefined) {
+        gradeMatrix[i][j] = score;
+        columnScores[j].push(score);
+      }
     }
   }
-  
-  // Calculate and add statistics for each assignment
-  assignmentColumns.forEach(assignmentInfo => {
-    const col = assignmentInfo.column;
+
+  // Batch write all grade data at once
+  if (numStudents > 0) {
+    sheet.getRange(FIRST_DATA_ROW, firstAssignmentCol, numStudents, numAssignmentCols).setValues(gradeMatrix);
+  }
+
+  // Calculate statistics and batch write stat rows
+  const avgScoreValues = [];
+  const avgPercentValues = [];
+  assignmentColumns.forEach((assignmentInfo, j) => {
+    const scores = columnScores[j];
     const maxPoints = assignmentInfo.points || 0;
-    const scores = statsData[col].scores;
-    
     if (scores.length > 0) {
-      // Calculate average score
-      const sum = scores.reduce((a, b) => a + b, 0);
-      const avgScore = sum / scores.length;
-      sheet.getRange(avgScoreRow, col).setValue(avgScore);
-      
-      // Calculate average percentage if possible
-      if (maxPoints > 0) {
-        const avgPercent = (avgScore / maxPoints) * 100;
-        sheet.getRange(avgPercentRow, col).setValue(avgPercent + '%');
-      }
+      const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+      avgScoreValues.push(avgScore);
+      avgPercentValues.push(maxPoints > 0 ? (avgScore / maxPoints) * 100 + '%' : 'No data');
     } else {
-      // No scores available
-      sheet.getRange(avgScoreRow, col).setValue("No data");
-      sheet.getRange(avgPercentRow, col).setValue("No data");
+      avgScoreValues.push('No data');
+      avgPercentValues.push('No data');
     }
   });
-  
-  // Format the header rows
-  const headerRows = [assignmentNameRow, totalPointsRow, avgScoreRow, avgPercentRow, assignmentIdRow];
-  headerRows.forEach(row => {
-    if (lastCol >= firstAssignmentCol) {
-      sheet.getRange(row, firstAssignmentCol, 1, currentCol - firstAssignmentCol)
-           .setFontWeight('bold')
-           .setHorizontalAlignment('center');
-    }
+
+  sheet.getRange(avgScoreRow, firstAssignmentCol, 1, numAssignmentCols).setValues([avgScoreValues]);
+  sheet.getRange(avgPercentRow, firstAssignmentCol, 1, numAssignmentCols).setValues([avgPercentValues]);
+
+  // Format all header rows
+  [assignmentNameRow, totalPointsRow, avgScoreRow, avgPercentRow, ASSIGNMENT_ID_HEADER_ROW].forEach(row => {
+    sheet.getRange(row, firstAssignmentCol, 1, numAssignmentCols)
+         .setFontWeight('bold')
+         .setHorizontalAlignment('center');
   });
-  
-  // Freeze the header rows and user info columns
-  sheet.setFrozenRows(6);   // Freeze through row 6
+
+  // Freeze header rows and user info columns
+  sheet.setFrozenRows(ASSIGNMENT_ID_HEADER_ROW);
   sheet.setFrozenColumns(4); // Freeze columns A-D
-  
+
   Logger.log('Finished writing gradebook data to sheet.');
 }

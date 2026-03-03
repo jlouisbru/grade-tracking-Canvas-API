@@ -93,11 +93,11 @@ function fetchAndPopulateCanvasUsers() {
 /**
  * Clears data and formatting from the first data row downwards in columns A to D.
  * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet The sheet object.
- * @param {number} firstDataRow The row number where student data begins. // *** ADDED parameter ***
- * @param {number} headerRow The row number where headers are located. // *** ADDED parameter ***
+ * @param {number} firstDataRow The row number where student data begins.
+ * @param {number} headerRow The row number where headers are located.
  * @private
  */
-function clearSheetData_(sheet, firstDataRow, headerRow) { // *** ADDED parameters ***
+function clearSheetData_(sheet, firstDataRow, headerRow) {
   const lastRow = sheet.getLastRow();
   if (lastRow >= firstDataRow) {
     const numRowsToClear = lastRow - firstDataRow + 1;
@@ -119,10 +119,10 @@ function clearSheetData_(sheet, firstDataRow, headerRow) { // *** ADDED paramete
 /**
  * Writes headers to the specified header row.
  * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet The sheet object.
- * @param {number} headerRow The row number where headers should be written. // *** ADDED parameter ***
+ * @param {number} headerRow The row number where headers should be written.
  * @private
  */
-function writeHeaders_(sheet, headerRow) { // *** ADDED parameter ***
+function writeHeaders_(sheet, headerRow) {
   const headers = [['Last Name', 'First Name', 'SIS User ID', 'Email']];
   sheet.getRange(headerRow, 1, 1, 4) // Use parameter
        .setValues(headers)
@@ -135,12 +135,12 @@ function writeHeaders_(sheet, headerRow) { // *** ADDED parameter ***
  * Writes the fetched user data array to the sheet starting from the specified row.
  * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet The sheet object.
  * @param {Array<Array<string|number>>} data The 2D array of user data.
- * @param {number} firstDataRow The row number where writing should begin. // *** ADDED parameter ***
+ * @param {number} firstDataRow The row number where writing should begin.
  * @private
  */
-function writeData_(sheet, data, firstDataRow) { // *** ADDED parameter ***
+function writeData_(sheet, data, firstDataRow) {
   if (data && data.length > 0) {
-    const targetRange = sheet.getRange(firstDataRow, 1, data.length, data[0].length); // Use parameter
+    const targetRange = sheet.getRange(firstDataRow, 1, data.length, data[0].length);
     targetRange.setValues(data);
     Logger.log('Wrote ' + data.length + ' rows of user data starting at row ' + firstDataRow);
   } else {
