@@ -63,7 +63,7 @@ function fetchAndPopulateCanvasUsers() {
 
       const sisUserId = user.sis_user_id || '';
       if (!sisUserId) {
-           Logger.log(`User ${user.name || user.sortable_name} (Canvas ID: ${user.id}) has no sis_user_id returned.`);
+           Logger.log(`Canvas User ID ${user.id} has no sis_user_id returned.`);
       }
       const email = user.email || '';
 

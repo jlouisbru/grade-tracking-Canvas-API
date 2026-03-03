@@ -136,10 +136,8 @@ function fetchCanvasGradesBySisId_(gradeOutputColumn) {
     // Uses SIS_ID_COLUMN and FIRST_DATA_ROW defined in the configuration file
     const sisIdRange = sheet.getRange(`${SIS_ID_COLUMN}${FIRST_DATA_ROW}:${SIS_ID_COLUMN}${lastRow}`);
     const sheetSisIds = sisIdRange.getValues();
-    Logger.log(`Read ${sheetSisIds.length} SIS IDs from column ${SIS_ID_COLUMN}.`);
-    if (sheetSisIds.length > 0) {
-        Logger.log(`First few SIS IDs from Sheet (Column ${SIS_ID_COLUMN}): [${sheetSisIds.slice(0, 5).map(r => `'${String(r[0]).trim()}'`).join(', ')}]`);
-    }
+    const nonEmptySisIds = sheetSisIds.filter(r => String(r[0]).trim()).length;
+    Logger.log(`Read ${sheetSisIds.length} rows from column ${SIS_ID_COLUMN}; ${nonEmptySisIds} have SIS IDs.`);
 
     // --- 5. Match Submissions to Sheet Rows and Write Grades ---
     let updatedCount = 0;
@@ -154,7 +152,7 @@ function fetchCanvasGradesBySisId_(gradeOutputColumn) {
       const grade = submission.score; // Can be null, number, or string depending on grading type
 
       if (index < 5) {
-          Logger.log(`Processing Submission #${index + 1}: Canvas User ID: ${submission.user_id}, SIS User ID: '${sisUserIdFromCanvas}', Score: ${grade}`);
+          Logger.log(`Processing Submission #${index + 1}: has SIS User ID: ${!!sisUserIdFromCanvas}, has Score: ${grade !== null && grade !== undefined}`);
       }
 
       if (sisUserIdFromCanvas) {
@@ -167,12 +165,12 @@ function fetchCanvasGradesBySisId_(gradeOutputColumn) {
         } else {
           // Log only if it wasn't one of the first few already logged
           if (index >= 5) {
-              Logger.log(`SIS User ID '${sisUserIdFromCanvas}' (Canvas User: ${submission.user_id}) from submission not found in spreadsheet column ${SIS_ID_COLUMN}.`);
+              Logger.log(`Submission #${index + 1} SIS User ID not matched in spreadsheet column ${SIS_ID_COLUMN}.`);
           }
           notFoundCount++;
         }
       } else {
-        Logger.log(`Submission for Canvas User ID ${submission.user_id} does not have an SIS User ID.`);
+        Logger.log(`Submission #${index + 1} does not have an SIS User ID.`);
         submissionsWithoutSisId++;
       }
     }); // end forEach(submission)

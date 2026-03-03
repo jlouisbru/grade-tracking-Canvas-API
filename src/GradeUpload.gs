@@ -114,14 +114,14 @@ function updateCanvasGrades_(gradeColumn) {
     let gradeToUpload;
     if (grade === '' || grade === null || grade === undefined) {
       gradeToUpload = '';
-      Logger.log(`Processing sheet row ${currentRowInSheet}: Student ID ${studentId}, Grade: [Empty/Cleared]`);
+      Logger.log(`Processing sheet row ${currentRowInSheet}: grade is empty/cleared.`);
     } else if (!isNaN(parseFloat(grade)) && isFinite(grade)) {
       gradeToUpload = Number(grade);
-      Logger.log(`Processing sheet row ${currentRowInSheet}: Student ID ${studentId}, Grade: ${gradeToUpload}`);
+      Logger.log(`Processing sheet row ${currentRowInSheet}: valid numeric grade.`);
     } else {
-      Logger.log(`Skipping sheet row ${currentRowInSheet}: Invalid grade format '${grade}' for Student ID ${studentId}.`);
+      Logger.log(`Skipping sheet row ${currentRowInSheet}: invalid grade format.`);
       invalidGradeCount++;
-      failedStudents.push({ id: studentId, reason: `Invalid grade format ('${grade}')` });
+      failedStudents.push({ id: studentId, row: currentRowInSheet, reason: `Invalid grade format` });
       continue;
     }
 
@@ -151,7 +151,7 @@ function updateCanvasGrades_(gradeColumn) {
         failCount++;
         let errorMessage = `API Error (Code: ${responseCode}). Response: ${responseBody.substring(0, 500)}`;
         if (responseCode === 404) {
-          errorMessage = `API Error 404: Submission/User not found for SIS ID '${studentId}' and Assignment ID ${assignmentId}. Verify ID, enrollment, and assignment existence.`;
+          errorMessage = `API Error 404: Submission/User not found for Assignment ID ${assignmentId}. Verify student enrollment and assignment existence.`;
         } else if (responseCode === 401 || responseCode === 403) {
           errorMessage = `API Error ${responseCode}: Unauthorized/Forbidden. Check API Key permissions for grading.`;
         } else if (responseCode === 400) {
@@ -168,8 +168,8 @@ function updateCanvasGrades_(gradeColumn) {
         } else if (responseCode === 409) {
           errorMessage = `API Error 409: Conflict. Potentially a concurrent edit occurred.`;
         }
-        failedStudents.push({ id: studentId, reason: errorMessage });
-        Logger.log(`Failed to update grade for Student ID ${studentId} (Sheet Row ${rowNum}). Reason: ${errorMessage}`);
+        failedStudents.push({ id: studentId, row: rowNum, reason: errorMessage });
+        Logger.log(`Failed to update grade for sheet row ${rowNum} (status ${responseCode}): ${errorMessage}`);
       }
     });
   }
@@ -186,8 +186,8 @@ function updateCanvasGrades_(gradeColumn) {
   if (failedStudents.length > 0) {
     summaryMessage += `------------------------------------------\n`;
     summaryMessage += `Details for Failures/Skipped Grades:\n`;
-    failedStudents.slice(0, 15).forEach(student => {
-      summaryMessage += `- ID: ${student.id}, Reason: ${student.reason}\n`;
+    failedStudents.slice(0, 15).forEach((student, idx) => {
+      summaryMessage += `- Row ${student.row}: ${student.reason}\n`;
     });
     if (failedStudents.length > 15) {
       summaryMessage += `... and ${failedStudents.length - 15} more. Check logs for full details.\n`;

@@ -125,12 +125,14 @@ function getCanvasApiKey() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   const ui = SpreadsheetApp.getUi();
   
-  // First, check cell B5
+  // First, check cell B5 — skip if it contains the masked placeholder
   const apiKeyFromCell = sheet.getRange(API_KEY_CELL).getValue();
-  if (apiKeyFromCell && apiKeyFromCell.trim()) {
-    Logger.log("Using API key from cell " + API_KEY_CELL);
-    // If API key is in the cell, save it to Script Properties for future use
+  if (apiKeyFromCell && apiKeyFromCell.trim() && apiKeyFromCell.trim() !== '•••••') {
+    // Save to Script Properties and replace the cell value with a placeholder
+    // so the token is not left visible to anyone with sheet access.
     PropertiesService.getScriptProperties().setProperty(API_KEY_PROPERTY_NAME, apiKeyFromCell.trim());
+    sheet.getRange(API_KEY_CELL).setValue('•••••');
+    Logger.log("API key moved from cell " + API_KEY_CELL + " to Script Properties and masked.");
     return apiKeyFromCell.trim();
   }
   
