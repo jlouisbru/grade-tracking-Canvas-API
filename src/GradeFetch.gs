@@ -14,8 +14,8 @@
  * @private
  */
 function promptForGradeColumn_() { // Renamed function
-  var ui = SpreadsheetApp.getUi();
-  var response = ui.prompt(
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.prompt(
     'Fetch Canvas Grades (by SIS ID)',
     'Enter the column letter where grades should be written (e.g., "F"):',
     ui.ButtonSet.OK_CANCEL
@@ -23,7 +23,7 @@ function promptForGradeColumn_() { // Renamed function
 
   // Process the user's response
   if (response.getSelectedButton() == ui.Button.OK) {
-    var gradeColumn = response.getResponseText().toUpperCase().trim();
+    const gradeColumn = response.getResponseText().toUpperCase().trim();
     // Validate that it's a valid column letter
     if (/^[A-Z]+$/.test(gradeColumn)) {
       fetchCanvasGradesBySisId_(gradeColumn); // Call the main fetching function
@@ -76,6 +76,7 @@ function fetchCanvasGradesBySisId_(gradeOutputColumn) {
     return;
   }
   Logger.log(`Using Assignment ID: ${assignmentId}`);
+  ToastManager.showToast(`Fetching grades for Assignment ID: ${assignmentId}`, 'Grade Fetch: In Progress', 10);
 
   // --- 3. Fetch Submissions from Canvas ---
   const url = `${canvasDomain}/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions?include[]=user&per_page=100`;
@@ -148,7 +149,9 @@ function fetchCanvasGradesBySisId_(gradeOutputColumn) {
     let updatedCount = 0;
     let notFoundCount = 0;
     let submissionsWithoutSisId = 0;
-    let gradesToWrite = [];
+    const gradeColNum = columnLetterToNumber_(gradeOutputColumn);
+    const numStudentRows = lastRow - FIRST_DATA_ROW + 1;
+    const gradesArray = Array.from({length: numStudentRows}, () => ['']);
 
     allSubmissions.forEach((submission, index) => {
       const sisUserIdFromCanvas = submission.user && submission.user.sis_user_id ? String(submission.user.sis_user_id).trim() : null;
@@ -163,14 +166,7 @@ function fetchCanvasGradesBySisId_(gradeOutputColumn) {
         const studentRowIndex = sheetSisIds.findIndex(row => String(row[0]).trim() === sisUserIdFromCanvas);
 
         if (studentRowIndex !== -1) {
-          // Calculate the actual row number in the sheet
-          // Uses FIRST_DATA_ROW defined in the configuration file
-          const outputSheetRow = studentRowIndex + FIRST_DATA_ROW;
-          gradesToWrite.push({
-              row: outputSheetRow,
-              col: columnLetterToNumber_(gradeOutputColumn),
-              value: grade === null ? '' : grade // Write empty string if grade is null/ungraded
-          });
+          gradesArray[studentRowIndex][0] = grade === null ? '' : grade;
           updatedCount++;
         } else {
           // Log only if it wasn't one of the first few already logged
@@ -186,17 +182,9 @@ function fetchCanvasGradesBySisId_(gradeOutputColumn) {
     }); // end forEach(submission)
 
     // --- 6. Perform Batch Update ---
-    if (gradesToWrite.length > 0) {
-        Logger.log(`Attempting to write ${gradesToWrite.length} grades.`);
-        // Write grades individually for simplicity and better error isolation,
-        // though batchUpdate could be used for performance on very large sheets.
-        gradesToWrite.forEach(item => {
-            try {
-                sheet.getRange(item.row, item.col).setValue(item.value);
-            } catch (e) {
-                Logger.log(`Error writing grade ${item.value} to row ${item.row}, col ${item.col}: ${e}`);
-            }
-        });
+    if (updatedCount > 0) {
+        Logger.log(`Attempting to write ${updatedCount} grades.`);
+        sheet.getRange(FIRST_DATA_ROW, gradeColNum, numStudentRows, 1).setValues(gradesArray);
         Logger.log("Finished writing grades.");
     } else {
         Logger.log("No grades to write (no matching SIS IDs found or submissions were empty).");
@@ -211,11 +199,13 @@ function fetchCanvasGradesBySisId_(gradeOutputColumn) {
       message += `${submissionsWithoutSisId} submissions lacked an SIS User ID.\n`;
     }
     message += `Check script logs (View > Logs) for details.`;
+    ToastManager.showCompletionToast('Grades have been fetched and updated in the sheet.', 'Grade Fetch', 5);
     ui.alert(message);
 
   } catch (error) {
     Logger.log('Error during grade fetch: ' + error);
     Logger.log('Stack Trace: ' + error.stack);
+    ToastManager.showErrorToast(error.message, 10);
     ui.alert('An error occurred: ' + error.message + '\nCheck script logs (View > Logs) for more details.');
   }
 }

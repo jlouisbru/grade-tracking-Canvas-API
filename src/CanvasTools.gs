@@ -93,14 +93,8 @@ const SIS_ID_COLUMN = 'C';
 const FIRST_DATA_ROW = 7;
 
 /**
- * The row number where general data headers (like Last Name, First Name, SIS User ID) are located.
- * Used by the script that fetches user information.
- */
-const USER_INFO_HEADER_ROW = 6;
-
-/**
- * The row number where the specific Canvas Assignment ID should be placed
- * in the header of the column used for fetching or uploading grades for that assignment.
+ * The row number used for column headers: general user info headers (Last Name, First Name, SIS User ID)
+ * and Canvas Assignment IDs for grade columns.
  */
 const ASSIGNMENT_ID_HEADER_ROW = 6;
 

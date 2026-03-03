@@ -2,7 +2,7 @@
  * ==========================================================================
  * SCRIPT TO FETCH CANVAS USERS
  * Assumes global constants (CANVAS_DOMAIN, API_KEY_PROPERTY_NAME,
- * COURSE_ID_CELL, SIS_ID_COLUMN, FIRST_DATA_ROW, USER_INFO_HEADER_ROW)
+ * COURSE_ID_CELL, SIS_ID_COLUMN, FIRST_DATA_ROW, ASSIGNMENT_ID_HEADER_ROW)
  * are defined elsewhere in the project.
  * ==========================================================================
  */
@@ -76,8 +76,8 @@ function fetchAndPopulateCanvasUsers() {
     });
 
     // --- 4. Write Data to Sheet ---
-    clearSheetData_(sheet, FIRST_DATA_ROW, USER_INFO_HEADER_ROW); // Pass relevant constants
-    writeHeaders_(sheet, USER_INFO_HEADER_ROW); // Pass relevant constant
+    clearSheetData_(sheet, FIRST_DATA_ROW, ASSIGNMENT_ID_HEADER_ROW); // Pass relevant constants
+    writeHeaders_(sheet, ASSIGNMENT_ID_HEADER_ROW); // Pass relevant constant
     writeData_(sheet, dataForSheet, FIRST_DATA_ROW); // Pass relevant constant
 
     Logger.log('Successfully populated sheet with user data.');
