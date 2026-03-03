@@ -98,12 +98,19 @@ const FIRST_DATA_ROW = 7;
  */
 const ASSIGNMENT_ID_HEADER_ROW = 6;
 
+/**
+ * The first column number (1-based) used for assignment data.
+ * Columns A-D are reserved for student info (last name, first name, SIS ID, email).
+ */
+const FIRST_ASSIGNMENT_COL = 5;
+
 
 // --- Notes ---
 // - The actual API key is NOT stored here; it's retrieved using API_KEY_PROPERTY_NAME.
 // - Canvas domain is now retrieved from cell B4 in the active sheet.
 // - Scripts that need these values will refer to these globally defined constants.
 // - Ensure you only have ONE `onOpen()` function defined across all your .gs files.
+// - fetchAllCanvasUsers_ is defined here because it is shared by UserFetch.gs, GradeFetch.gs, and GradeUpload.gs.
 
 
 /**
@@ -206,6 +213,53 @@ function getCanvasDomain() {
   if (formattedDomain.endsWith('/')) {
     formattedDomain = formattedDomain.slice(0, -1);
   }
-  
+
   return formattedDomain;
+}
+
+/**
+ * Fetches all users for a given course ID from the Canvas API, handling pagination.
+ * Shared helper used by UserFetch.gs, GradeFetch.gs, and GradeUpload.gs.
+ * @param {string|number} courseId The Canvas Course ID.
+ * @param {string} apiToken The Canvas API token.
+ * @param {string} canvasDomain The base Canvas domain URL.
+ * @return {Array<Object>} An array of Canvas user objects.
+ * @private
+ */
+function fetchAllCanvasUsers_(courseId, apiToken, canvasDomain) {
+  let allUsers = [];
+  let nextPageUrl = `${canvasDomain}/api/v1/courses/${courseId}/users?include[]=email&per_page=100`;
+
+  const options = {
+    'method': 'get',
+    'headers': {
+      'Authorization': 'Bearer ' + apiToken
+    },
+    'muteHttpExceptions': true
+  };
+
+  while (nextPageUrl) {
+    Logger.log('Fetching URL: ' + nextPageUrl);
+    const response = UrlFetchApp.fetch(nextPageUrl, options);
+    const responseCode = response.getResponseCode();
+    const responseBody = response.getContentText();
+
+    if (responseCode === 200) {
+      const users = JSON.parse(responseBody);
+      if (users && users.length > 0) {
+        allUsers = allUsers.concat(users);
+      } else {
+        nextPageUrl = null;
+      }
+      const linkHeader = response.getHeaders()['Link'] || response.getHeaders()['link'];
+      nextPageUrl = parseLinkHeader_(linkHeader);
+      Logger.log("Next page URL: " + (nextPageUrl || 'None'));
+    } else {
+      Logger.log('API Error - Response Code: ' + responseCode);
+      Logger.log('API Error - Response Body: ' + responseBody);
+      throw new Error(`Canvas API request failed with status code ${responseCode}. Check Course ID (${courseId}), API Token validity, and Permissions. Response: ${responseBody.substring(0, 500)}`);
+    }
+  }
+
+  return allUsers;
 }

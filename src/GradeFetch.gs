@@ -106,13 +106,9 @@ function fetchCanvasGradesBySisId_(gradeOutputColumn) {
         const submissions = JSON.parse(responseBody);
         if (submissions && submissions.length > 0) {
             allSubmissions = allSubmissions.concat(submissions);
-        } else {
-            // No more submissions on this page, stop pagination
-            nextPage = null;
         }
-        // Check for pagination link even if submissions array is empty, just in case
         const linkHeader = response.getHeaders()['Link'] || response.getHeaders()['link'];
-        nextPage = parseLinkHeader_(linkHeader); // Update nextPage based on header
+        nextPage = parseLinkHeader_(linkHeader);
         Logger.log("Next page URL from header: " + (nextPage || 'None'));
       } else {
         Logger.log(`API Error - Status: ${responseCode}, Response: ${responseBody.substring(0, 500)}`);
@@ -233,7 +229,7 @@ function fetchCompleteCanvasGradebook() {
   const apiKey = getCanvasApiKey();
   if (!apiKey) {
     return;
-}
+  }
   
   // --- Get Canvas Domain from cell B4 ---
   const canvasDomain = getCanvasDomain();
@@ -311,52 +307,6 @@ function fetchCompleteCanvasGradebook() {
     ToastManager.showToast('Error: ' + error.message, 'Gradebook Fetch: Failed', 10);
     ui.alert('An error occurred: ' + error.message + '\n\nPlease check the Script Execution Logs (View > Logs) for more details.');
   }
-}
-
-/**
- * Fetches all users for a given course ID from the Canvas API, handling pagination.
- * @param {string|number} courseId The Canvas Course ID.
- * @param {string} apiToken The Canvas API token.
- * @param {string} canvasDomain The base Canvas domain URL.
- * @return {Array<Object>} An array of Canvas user objects.
- * @private
- */
-function fetchAllCanvasUsers_(courseId, apiToken, canvasDomain) {
-  let allUsers = [];
-  let nextPageUrl = `${canvasDomain}/api/v1/courses/${courseId}/users?include[]=email&per_page=100`;
-
-  const options = {
-    'method': 'get',
-    'headers': {
-      'Authorization': 'Bearer ' + apiToken
-    },
-    'muteHttpExceptions': true
-  };
-
-  while (nextPageUrl) {
-    Logger.log('Fetching URL: ' + nextPageUrl);
-    const response = UrlFetchApp.fetch(nextPageUrl, options);
-    const responseCode = response.getResponseCode();
-    const responseBody = response.getContentText();
-
-    if (responseCode === 200) {
-      const users = JSON.parse(responseBody);
-      if (users && users.length > 0) {
-          allUsers = allUsers.concat(users);
-      } else {
-          nextPageUrl = null;
-      }
-      const linkHeader = response.getHeaders()['Link'] || response.getHeaders()['link'];
-      nextPageUrl = parseLinkHeader_(linkHeader);
-      Logger.log("Next page URL: " + (nextPageUrl || 'None'));
-    } else {
-      Logger.log('API Error - Response Code: ' + responseCode);
-      Logger.log('API Error - Response Body: ' + responseBody);
-      throw new Error(`Canvas API request failed with status code ${responseCode}. Check Course ID (${courseId}), API Token validity, and Permissions. Response: ${responseBody.substring(0, 500)}`);
-    }
-  }
-
-  return allUsers;
 }
 
 /**
@@ -483,13 +433,11 @@ function fetchCanvasGradebook_(courseId, apiToken, canvasDomain) {
 function writeGradebookToSheet_(sheet, users, assignments, gradebook) {
   Logger.log('Preparing to write gradebook data to sheet...');
 
-  const firstAssignmentCol = 5; // Column E
-
   // Clear existing assignment columns, preserving columns A-D and row 2
   const lastCol = sheet.getLastColumn();
-  if (lastCol >= firstAssignmentCol) {
-    sheet.getRange(1, firstAssignmentCol, 1, lastCol - firstAssignmentCol + 1).clear(); // Row 1
-    sheet.getRange(3, firstAssignmentCol, sheet.getLastRow() - 2, lastCol - firstAssignmentCol + 1).clear(); // Row 3 onwards
+  if (lastCol >= FIRST_ASSIGNMENT_COL) {
+    sheet.getRange(1, FIRST_ASSIGNMENT_COL, 1, lastCol - FIRST_ASSIGNMENT_COL + 1).clear(); // Row 1
+    sheet.getRange(3, FIRST_ASSIGNMENT_COL, sheet.getLastRow() - 2, lastCol - FIRST_ASSIGNMENT_COL + 1).clear(); // Row 3 onwards
   }
 
   // Row layout (rows 1-6 are headers; FIRST_DATA_ROW+ is student data)
@@ -513,7 +461,7 @@ function writeGradebookToSheet_(sheet, users, assignments, gradebook) {
   const headerNames = [];
   const headerPoints = [];
   const headerIds = [];
-  let currentCol = firstAssignmentCol;
+  let currentCol = FIRST_ASSIGNMENT_COL;
 
   for (const groupId in assignmentGroups) {
     assignmentGroups[groupId].forEach(assignment => {
@@ -532,9 +480,9 @@ function writeGradebookToSheet_(sheet, users, assignments, gradebook) {
   }
 
   // Batch write all assignment header rows at once
-  sheet.getRange(assignmentNameRow, firstAssignmentCol, 1, numAssignmentCols).setValues([headerNames]);
-  sheet.getRange(totalPointsRow, firstAssignmentCol, 1, numAssignmentCols).setValues([headerPoints]);
-  sheet.getRange(ASSIGNMENT_ID_HEADER_ROW, firstAssignmentCol, 1, numAssignmentCols).setValues([headerIds]);
+  sheet.getRange(assignmentNameRow, FIRST_ASSIGNMENT_COL, 1, numAssignmentCols).setValues([headerNames]);
+  sheet.getRange(totalPointsRow, FIRST_ASSIGNMENT_COL, 1, numAssignmentCols).setValues([headerPoints]);
+  sheet.getRange(ASSIGNMENT_ID_HEADER_ROW, FIRST_ASSIGNMENT_COL, 1, numAssignmentCols).setValues([headerIds]);
 
   // Build SIS User ID → user object lookup
   const usersBySisId = {};
@@ -543,7 +491,7 @@ function writeGradebookToSheet_(sheet, users, assignments, gradebook) {
   });
 
   // Get student SIS IDs from the sheet to match the existing row order
-  const sheetSisIds = sheet.getRange(`C${FIRST_DATA_ROW}:C${sheet.getLastRow()}`).getValues();
+  const sheetSisIds = sheet.getRange(`${SIS_ID_COLUMN}${FIRST_DATA_ROW}:${SIS_ID_COLUMN}${sheet.getLastRow()}`).getValues();
   const numStudents = sheetSisIds.length;
 
   // Build grade matrix and collect per-assignment scores for statistics
@@ -566,7 +514,7 @@ function writeGradebookToSheet_(sheet, users, assignments, gradebook) {
 
   // Batch write all grade data at once
   if (numStudents > 0) {
-    sheet.getRange(FIRST_DATA_ROW, firstAssignmentCol, numStudents, numAssignmentCols).setValues(gradeMatrix);
+    sheet.getRange(FIRST_DATA_ROW, FIRST_ASSIGNMENT_COL, numStudents, numAssignmentCols).setValues(gradeMatrix);
   }
 
   // Calculate statistics and batch write stat rows
@@ -578,19 +526,20 @@ function writeGradebookToSheet_(sheet, users, assignments, gradebook) {
     if (scores.length > 0) {
       const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
       avgScoreValues.push(avgScore);
-      avgPercentValues.push(maxPoints > 0 ? (avgScore / maxPoints) * 100 + '%' : 'No data');
+      avgPercentValues.push(maxPoints > 0 ? (avgScore / maxPoints) : 'No data');
     } else {
       avgScoreValues.push('No data');
       avgPercentValues.push('No data');
     }
   });
 
-  sheet.getRange(avgScoreRow, firstAssignmentCol, 1, numAssignmentCols).setValues([avgScoreValues]);
-  sheet.getRange(avgPercentRow, firstAssignmentCol, 1, numAssignmentCols).setValues([avgPercentValues]);
+  sheet.getRange(avgScoreRow, FIRST_ASSIGNMENT_COL, 1, numAssignmentCols).setValues([avgScoreValues]);
+  sheet.getRange(avgPercentRow, FIRST_ASSIGNMENT_COL, 1, numAssignmentCols).setValues([avgPercentValues]);
+  sheet.getRange(avgPercentRow, FIRST_ASSIGNMENT_COL, 1, numAssignmentCols).setNumberFormat('0.00%');
 
   // Format all header rows
   [assignmentNameRow, totalPointsRow, avgScoreRow, avgPercentRow, ASSIGNMENT_ID_HEADER_ROW].forEach(row => {
-    sheet.getRange(row, firstAssignmentCol, 1, numAssignmentCols)
+    sheet.getRange(row, FIRST_ASSIGNMENT_COL, 1, numAssignmentCols)
          .setFontWeight('bold')
          .setHorizontalAlignment('center');
   });

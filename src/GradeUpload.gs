@@ -37,8 +37,8 @@ function promptForGradeUploadColumn_() {
 
 // --- Core Logic ---
 /**
- * Reads grades from the specified sheet column and uploads them to Canvas.
- * Uses global constants defined in the configuration file for sheet layout and API details.
+ * Reads grades from the specified sheet column and uploads them to Canvas
+ * using parallel requests via UrlFetchApp.fetchAll.
  * @param {string} gradeColumn The letter of the column containing grades to upload.
  * @private
  */
@@ -46,14 +46,9 @@ function updateCanvasGrades_(gradeColumn) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   const ui = SpreadsheetApp.getUi();
 
-  // --- Get API Key from Script Properties ---
   const apiKey = getCanvasApiKey();
-  if (!apiKey) {
-    return;
-  }
+  if (!apiKey) return;
 
-  // --- Get Course ID from Sheet ---
-  // Uses COURSE_ID_CELL defined in the configuration file
   const courseId = sheet.getRange(COURSE_ID_CELL).getValue();
   if (!courseId) {
     ui.alert(`Error: Course ID not found in cell ${COURSE_ID_CELL}.`);
@@ -62,8 +57,6 @@ function updateCanvasGrades_(gradeColumn) {
   }
   Logger.log(`Using Course ID: ${courseId}`);
 
-  // --- Get Assignment ID from Sheet ---
-  // Uses ASSIGNMENT_ID_HEADER_ROW defined in the configuration file
   const assignmentIdCell = `${gradeColumn}${ASSIGNMENT_ID_HEADER_ROW}`;
   const assignmentId = sheet.getRange(assignmentIdCell).getValue();
   if (!assignmentId) {
@@ -74,31 +67,25 @@ function updateCanvasGrades_(gradeColumn) {
   Logger.log(`Using Assignment ID: ${assignmentId}`);
   ToastManager.showToast(`Uploading grades for Assignment ID: ${assignmentId}`, 'Grade Upload: Starting', 10);
 
-  // --- Get Canvas Domain ---
   const canvasDomain = getCanvasDomain();
   if (!canvasDomain) return;
 
-  // --- Read Data from Sheet ---
   const lastRow = sheet.getLastRow();
-  // Uses FIRST_DATA_ROW defined in the configuration file
   if (lastRow < FIRST_DATA_ROW) {
-      ui.alert("No student data found in the sheet starting from row " + FIRST_DATA_ROW);
-      Logger.log("No student data rows found.");
-      return;
+    ui.alert("No student data found in the sheet starting from row " + FIRST_DATA_ROW);
+    Logger.log("No student data rows found.");
+    return;
   }
-  // Read only the necessary columns (SIS ID and Grade Column) for efficiency
-  // Uses SIS_ID_COLUMN and FIRST_DATA_ROW from config
+
   const studentIdColNum = columnLetterToNumber_(SIS_ID_COLUMN);
   const gradeColNum = columnLetterToNumber_(gradeColumn);
   const firstCol = Math.min(studentIdColNum, gradeColNum);
   const lastCol = Math.max(studentIdColNum, gradeColNum);
-  const numCols = lastCol - firstCol + 1;
 
-  const dataRange = sheet.getRange(FIRST_DATA_ROW, firstCol, lastRow - FIRST_DATA_ROW + 1, numCols);
+  const dataRange = sheet.getRange(FIRST_DATA_ROW, firstCol, lastRow - FIRST_DATA_ROW + 1, lastCol - firstCol + 1);
   const values = dataRange.getValues();
   Logger.log(`Read data from range ${dataRange.getA1Notation()}.`);
 
-  // Calculate 0-based indices relative to the fetched range `values`
   const studentIdIndex = studentIdColNum - firstCol;
   const gradeIndex = gradeColNum - firstCol;
 
@@ -106,58 +93,88 @@ function updateCanvasGrades_(gradeColumn) {
   let failCount = 0;
   let invalidGradeCount = 0;
   let skippedMissingIdCount = 0;
-  let failedStudents = []; // Stores {id: studentId, reason: message}
+  let failedStudents = [];
 
-  // --- Process Each Student Row ---
-  // Uses FIRST_DATA_ROW from config
-  const startRowIndex = 0; // Start from the first row of the fetched `values` array
-  const sheetStartRow = FIRST_DATA_ROW; // Keep track of the actual sheet row number for logging
-  Logger.log(`Starting grade upload process. Processing ${values.length} potential student rows from sheet row ${sheetStartRow}.`);
+  // --- Build requests ---
+  const requests = [];
+  const requestMeta = [];
+  Logger.log(`Building grade upload requests from ${values.length} potential student rows.`);
 
-  for (let i = startRowIndex; i < values.length; i++) {
-    const currentRowInSheet = sheetStartRow + i; // Actual row number in the spreadsheet
-    const studentId = values[i][studentIdIndex] ? String(values[i][studentIdIndex]).trim() : null; // Trim SIS ID
-    let grade = values[i][gradeIndex];
+  for (let i = 0; i < values.length; i++) {
+    const currentRowInSheet = FIRST_DATA_ROW + i;
+    const studentId = values[i][studentIdIndex] ? String(values[i][studentIdIndex]).trim() : null;
+    const grade = values[i][gradeIndex];
 
     if (!studentId) {
-        Logger.log(`Skipping sheet row ${currentRowInSheet}: Missing or empty Student ID in column ${SIS_ID_COLUMN}.`);
-        skippedMissingIdCount++;
-        continue; // Skip this row if SIS ID is missing or empty
+      Logger.log(`Skipping sheet row ${currentRowInSheet}: Missing or empty Student ID in column ${SIS_ID_COLUMN}.`);
+      skippedMissingIdCount++;
+      continue;
     }
 
     let gradeToUpload;
-    // Check for empty/null/undefined explicitly
     if (grade === '' || grade === null || grade === undefined) {
-        gradeToUpload = ''; // Canvas API accepts empty string to clear grade
-        Logger.log(`Processing sheet row ${currentRowInSheet}: Student ID ${studentId}, Grade: [Empty/Cleared]`);
-    }
-    // Check if it's a number or a string that can be converted to a finite number
-    else if (!isNaN(parseFloat(grade)) && isFinite(grade)) {
-        // Allow decimals for upload, Canvas handles rounding/precision based on assignment settings
-        gradeToUpload = Number(grade);
-        Logger.log(`Processing sheet row ${currentRowInSheet}: Student ID ${studentId}, Grade: ${gradeToUpload}`);
+      gradeToUpload = '';
+      Logger.log(`Processing sheet row ${currentRowInSheet}: Student ID ${studentId}, Grade: [Empty/Cleared]`);
+    } else if (!isNaN(parseFloat(grade)) && isFinite(grade)) {
+      gradeToUpload = Number(grade);
+      Logger.log(`Processing sheet row ${currentRowInSheet}: Student ID ${studentId}, Grade: ${gradeToUpload}`);
     } else {
-        // If it's not empty and not a valid number, skip it
-        Logger.log(`Skipping sheet row ${currentRowInSheet}: Invalid grade format '${grade}' for Student ID ${studentId}. Grade must be numeric or empty.`);
-        invalidGradeCount++;
-        failedStudents.push({ id: studentId, reason: `Invalid grade format ('${grade}')` });
-        continue;
+      Logger.log(`Skipping sheet row ${currentRowInSheet}: Invalid grade format '${grade}' for Student ID ${studentId}.`);
+      invalidGradeCount++;
+      failedStudents.push({ id: studentId, reason: `Invalid grade format ('${grade}')` });
+      continue;
     }
 
-    const updateResult = updateGradeInCanvas_(apiKey, courseId, assignmentId, studentId, gradeToUpload, canvasDomain);
+    requests.push({
+      url: `${canvasDomain}/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/sis_user_id:${studentId}`,
+      method: 'put',
+      contentType: 'application/json',
+      payload: JSON.stringify({ submission: { posted_grade: gradeToUpload } }),
+      headers: { 'Authorization': 'Bearer ' + apiKey },
+      muteHttpExceptions: true
+    });
+    requestMeta.push({ id: studentId, row: currentRowInSheet });
+  }
 
-    if (updateResult.success) {
-      successCount++;
-    } else {
-      failCount++;
-      failedStudents.push({ id: studentId, reason: updateResult.message });
-      // Log detailed failure reason from the API call
-      Logger.log(`Failed to update grade for Student ID ${studentId} (Sheet Row ${currentRowInSheet}). Reason: ${updateResult.message}`);
-    }
-    // Utilities.sleep(100); // Optional: Small delay to avoid hitting API rate limits on very large courses
-  } // End of loop
+  // --- Fire all requests in parallel ---
+  if (requests.length > 0) {
+    ToastManager.showToast(`Uploading ${requests.length} grades...`, 'Grade Upload: In Progress', 30);
+    const responses = UrlFetchApp.fetchAll(requests);
+    responses.forEach((response, idx) => {
+      const { id: studentId, row: rowNum } = requestMeta[idx];
+      const responseCode = response.getResponseCode();
+      const responseBody = response.getContentText();
 
-  // --- Log Summary ---
+      if (responseCode >= 200 && responseCode < 300) {
+        successCount++;
+      } else {
+        failCount++;
+        let errorMessage = `API Error (Code: ${responseCode}). Response: ${responseBody.substring(0, 500)}`;
+        if (responseCode === 404) {
+          errorMessage = `API Error 404: Submission/User not found for SIS ID '${studentId}' and Assignment ID ${assignmentId}. Verify ID, enrollment, and assignment existence.`;
+        } else if (responseCode === 401 || responseCode === 403) {
+          errorMessage = `API Error ${responseCode}: Unauthorized/Forbidden. Check API Key permissions for grading.`;
+        } else if (responseCode === 400) {
+          let canvasErrorDetail = '';
+          try {
+            const errorJson = JSON.parse(responseBody);
+            if (errorJson.errors && errorJson.errors.length > 0) {
+              canvasErrorDetail = errorJson.errors.map(e => e.message || JSON.stringify(e)).join('; ');
+            } else if (errorJson.message) {
+              canvasErrorDetail = errorJson.message;
+            }
+          } catch (e) { /* Ignore parsing error */ }
+          errorMessage = `API Error 400: Bad Request. Canvas message: ${canvasErrorDetail || responseBody.substring(0, 200)}`;
+        } else if (responseCode === 409) {
+          errorMessage = `API Error 409: Conflict. Potentially a concurrent edit occurred.`;
+        }
+        failedStudents.push({ id: studentId, reason: errorMessage });
+        Logger.log(`Failed to update grade for Student ID ${studentId} (Sheet Row ${rowNum}). Reason: ${errorMessage}`);
+      }
+    });
+  }
+
+  // --- Summary ---
   let summaryMessage = `Grade upload complete for Assignment ID ${assignmentId}.\n`;
   summaryMessage += `------------------------------------------\n`;
   summaryMessage += `Rows Processed: ${values.length}\n`;
@@ -169,100 +186,19 @@ function updateCanvasGrades_(gradeColumn) {
   if (failedStudents.length > 0) {
     summaryMessage += `------------------------------------------\n`;
     summaryMessage += `Details for Failures/Skipped Grades:\n`;
-    // Log only the first 10-15 failures to avoid huge alert boxes
-    const failuresToShow = failedStudents.slice(0, 15);
-    failuresToShow.forEach(student => {
+    failedStudents.slice(0, 15).forEach(student => {
       summaryMessage += `- ID: ${student.id}, Reason: ${student.reason}\n`;
     });
     if (failedStudents.length > 15) {
-        summaryMessage += `... and ${failedStudents.length - 15} more. Check logs for full details.\n`;
+      summaryMessage += `... and ${failedStudents.length - 15} more. Check logs for full details.\n`;
     }
   }
   summaryMessage += `------------------------------------------\n`;
   summaryMessage += `Check script logs (View > Logs) for full details.`;
 
-  Logger.log(summaryMessage); // Log the full summary
+  Logger.log(summaryMessage);
   ToastManager.showCompletionToast('Grade upload complete. See dialog for details.', 'Grade Upload', 5);
-  // Display a slightly shorter version in the alert
   ui.alert(summaryMessage.replace(/------------------------------------------\n/g, ''));
-
-}
-
-/**
- * Sends the grade update request to the Canvas API for a single student.
- * @param {string} apiKey        Canvas API access token.
- * @param {string|number} courseId     Canvas Course ID.
- * @param {string|number} assignmentId Canvas Assignment ID.
- * @param {string} studentId      The student SIS User ID.
- * @param {number|string} grade        The grade to post (numeric or empty string).
- * @param {string} canvasDomain  The Canvas domain URL.
- * @return {object} An object {success: boolean, message: string}.
- * @private
- */
-function updateGradeInCanvas_(apiKey, courseId, assignmentId, studentId, grade, canvasDomain) {
-  const url = `${canvasDomain}/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/sis_user_id:${studentId}`;
-
-
-  // Construct payload - Canvas expects grade under submission.posted_grade
-  const payload = {
-    submission: {
-      posted_grade: grade
-    }
-    // You could add comments here too, e.g.:
-    // comment: {
-    //   text_comment: "Grade updated via Google Sheet script."
-    // }
-  };
-
-  const options = {
-    method: 'put',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
-    },
-    payload: JSON.stringify(payload),
-    muteHttpExceptions: true // Prevent script termination on API errors, handle them manually
-  };
-
-  try {
-    const response = UrlFetchApp.fetch(url, options);
-    const responseCode = response.getResponseCode();
-    const responseBody = response.getContentText();
-
-    // Check for successful response codes (200 OK, 201 Created, 204 No Content)
-    if (responseCode >= 200 && responseCode < 300) {
-      return { success: true, message: `OK (Code: ${responseCode})` };
-    } else {
-      // Provide specific error messages based on common Canvas API responses
-      let errorMessage = `API Error (Code: ${responseCode}). Response: ${responseBody.substring(0, 500)}`; // Default
-      if (responseCode === 404) {
-          errorMessage = `API Error 404: Submission/User not found for SIS ID '${studentId}' and Assignment ID ${assignmentId}. Verify ID, enrollment, and assignment existence.`;
-      } else if (responseCode === 401 || responseCode === 403) {
-          errorMessage = `API Error ${responseCode}: Unauthorized/Forbidden. Check API Key permissions for grading.`;
-      } else if (responseCode === 400) {
-          // Try to parse Canvas error message if available
-          let canvasErrorDetail = '';
-          try {
-              const errorJson = JSON.parse(responseBody);
-              if (errorJson.errors && errorJson.errors.length > 0) {
-                  canvasErrorDetail = errorJson.errors.map(e => e.message || JSON.stringify(e)).join('; ');
-              } else if (errorJson.message) {
-                  canvasErrorDetail = errorJson.message;
-              }
-          } catch (e) { /* Ignore parsing error */ }
-          errorMessage = `API Error 400: Bad Request. Check payload format or grade value. Canvas message: ${canvasErrorDetail || responseBody.substring(0, 200)}`;
-      } else if (responseCode === 409) {
-           errorMessage = `API Error 409: Conflict. Potentially a concurrent edit occurred.`;
-      }
-      // Log the full response body for debugging if needed, but don't return it all in the message
-      Logger.log(`Failed API call to ${url} for student ${studentId}. Code: ${responseCode}. Response: ${responseBody}`);
-      return { success: false, message: errorMessage };
-    }
-  } catch (error) {
-    // Catch network errors or other UrlFetchApp issues
-    Logger.log(`Network or script error during API call for student ${studentId}: ${error} \nStack: ${error.stack}`);
-    return { success: false, message: `Network/Script Error: ${error.message}` };
-  }
 }
 
 /**
@@ -298,13 +234,12 @@ function promptForGradebookUpload() {
 function uploadGradebookToCanvas_() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   const ui = SpreadsheetApp.getUi();
-  const firstAssignmentCol = 5; // Column E
   const lastCol = sheet.getLastColumn();
-  if (lastCol < firstAssignmentCol) {
+  if (lastCol < FIRST_ASSIGNMENT_COL) {
     ui.alert('No assignment columns found. Please fetch the gradebook first.');
     return;
   }
-  uploadGradeColumnsToCanvas_(firstAssignmentCol, lastCol, 'Gradebook Upload');
+  uploadGradeColumnsToCanvas_(FIRST_ASSIGNMENT_COL, lastCol, 'Gradebook Upload');
 }
 
 /**
@@ -378,14 +313,14 @@ function promptForGradeRangeUpload() {
 function uploadGradeRangeToCanvas_(startColNum, endColNum) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   const ui = SpreadsheetApp.getUi();
-  if (startColNum < 5) {
+  if (startColNum < FIRST_ASSIGNMENT_COL) {
     ui.alert('Error: Starting column must be column E or later (student data is in columns A-D).');
     return;
   }
   const numCols = endColNum - startColNum + 1;
   const assignmentIds = sheet.getRange(ASSIGNMENT_ID_HEADER_ROW, startColNum, 1, numCols).getValues()[0];
   if (!assignmentIds.some(id => !!id)) {
-    ui.alert('No valid assignment IDs found in row 6 of the selected columns. Please ensure the gradebook is properly set up.');
+    ui.alert(`No valid assignment IDs found in row ${ASSIGNMENT_ID_HEADER_ROW} of the selected columns. Please ensure the gradebook is properly set up.`);
     return;
   }
   uploadGradeColumnsToCanvas_(startColNum, endColNum, 'Grade Range Upload');
@@ -427,17 +362,8 @@ function uploadGradeColumnsToCanvas_(startColNum, endColNum, operationLabel) {
     }
 
     const assignmentIds = sheet.getRange(ASSIGNMENT_ID_HEADER_ROW, startColNum, 1, numCols).getValues()[0];
-    const sisUserIds = sheet.getRange(`C${FIRST_DATA_ROW}:C${lastRow}`).getValues();
+    const sisUserIds = sheet.getRange(`${SIS_ID_COLUMN}${FIRST_DATA_ROW}:${SIS_ID_COLUMN}${lastRow}`).getValues();
     const gradesData = sheet.getRange(FIRST_DATA_ROW, startColNum, lastRow - FIRST_DATA_ROW + 1, numCols).getValues();
-
-    // Fetch Canvas users and build SIS ID → Canvas User ID lookup
-    ToastManager.showToast('Fetching Canvas users...', `${operationLabel}: Step 1/3`, 30);
-    Logger.log('Fetching Canvas users to get IDs...');
-    const users = fetchAllCanvasUsers_(courseId, apiKey, canvasDomain);
-    const userIdLookup = {};
-    users.forEach(user => {
-      if (user.sis_user_id) userIdLookup[user.sis_user_id] = user.id;
-    });
 
     // Pre-read assignment names for progress toasts
     const assignmentNames = sheet.getRange(1, startColNum, 1, numCols).getValues()[0];
@@ -452,7 +378,7 @@ function uploadGradeColumnsToCanvas_(startColNum, endColNum, operationLabel) {
     let totalExpectedSubmissions = 0;
     for (let i = 0; i < sisUserIds.length; i++) {
       const sisUserId = sisUserIds[i][0];
-      if (!sisUserId || !userIdLookup[sisUserId]) continue;
+      if (!sisUserId) continue;
       for (let j = 0; j < assignmentIds.length; j++) {
         if (!assignmentIds[j]) continue;
         const grade = gradesData[i][j];
@@ -461,7 +387,7 @@ function uploadGradeColumnsToCanvas_(startColNum, endColNum, operationLabel) {
       }
     }
 
-    ToastManager.showToast(`Preparing to upload ${totalExpectedSubmissions} grades...`, `${operationLabel}: Step 2/3`, 30);
+    ToastManager.showToast(`Preparing to upload ${totalExpectedSubmissions} grades...`, `${operationLabel}: Step 1/2`, 30);
 
     // Upload per assignment: collect all student requests then fire in parallel with fetchAll
     for (let j = 0; j < assignmentIds.length; j++) {
@@ -473,13 +399,6 @@ function uploadGradeColumnsToCanvas_(startColNum, endColNum, operationLabel) {
         const sisUserId = sisUserIds[i][0];
         if (!sisUserId) continue;
 
-        const canvasUserId = userIdLookup[sisUserId];
-        if (!canvasUserId) {
-          Logger.log(`Warning: No Canvas User ID found for SIS User ID: ${sisUserId}`);
-          skippedSubmissions++;
-          continue;
-        }
-
         const grade = gradesData[i][j];
         if (grade === null || grade === undefined || grade === '') {
           skippedSubmissions++;
@@ -487,7 +406,7 @@ function uploadGradeColumnsToCanvas_(startColNum, endColNum, operationLabel) {
         }
 
         requests.push({
-          url: `${canvasDomain}/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/${canvasUserId}`,
+          url: `${canvasDomain}/api/v1/courses/${courseId}/assignments/${assignmentId}/submissions/sis_user_id:${sisUserId}`,
           method: 'put',
           contentType: 'application/json',
           payload: JSON.stringify({ submission: { posted_grade: grade } }),
@@ -517,7 +436,7 @@ function uploadGradeColumnsToCanvas_(startColNum, endColNum, operationLabel) {
       const assignmentName = assignmentNames[j] || `Assignment ${assignmentId}`;
       ToastManager.showToast(
         `Progress: ${progressCounter}/${totalExpectedSubmissions} (${progressPercentage}%)\nCompleted: ${assignmentName}`,
-        `${operationLabel}: Step 2/3`,
+        `${operationLabel}: Step 2/2`,
         30
       );
     }
