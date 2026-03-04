@@ -103,4 +103,3 @@ function columnLetterToNumber_(letter) {
   }
   return column;
 }
-
